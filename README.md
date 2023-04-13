@@ -1,7 +1,7 @@
 # ChestXpert
 ChestXpert is a web application that uses transformers to generate medical reports based on uploaded chest X-ray images. This repository contains the code for the model and the Streamlit web application.
 
-</br><img src="https://github.com/Wimukti/ChestXpert/blob/main/ChestXpert%20logo.gif" width="50%" />
+</br><img src="https://github.com/Wimukti/ChestXpert/blob/main/assets/ChestXpert%20logo.gif" width="50%" />
 
 # Model
 The ChestXpert model uses an encoder-decoder architecture based on the Transformer architecture. The encoder takes in the chest X-ray image as input and generates a feature vector, which is then passed to the decoder to generate the corresponding medical report.
