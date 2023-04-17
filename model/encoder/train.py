@@ -1,8 +1,8 @@
 import tensorflow as tf
-from dataset.get_image_dataset import get_train_dataset, get_validate_dataset, get_test_dataset
+from dataset.get_image_dataset import get_train_dataset, get_validate_dataset
 
 # ToDo: Add test dataset
-test_dataset = get_test_dataset()
+train_dataset = get_train_dataset()
 validate_dataset = get_validate_dataset()
 checkpoint_path = "checkpoint/123"
 
