@@ -22,22 +22,17 @@ train_csv = os.path.join(train_test_validate_root, 'train.csv')
 train_reports = pd.read_csv(train_csv).replace(replaced_values).values
 
 # get train dataset image paths
-train_image_paths = [os.path.join(dataset_root, path)
-                     for path in train_reports[:, 0]]
+train_image_paths = [os.path.join(dataset_root, path) for path in train_reports[:, 0]]
 
 # get train dataset labels (class)
 train_labels = np.uint8(train_reports[:, 2:])
 
 # create train dataset
-train_dataset = tf.data.Dataset.from_tensor_slices(
-    (train_image_paths, train_labels))
+train_dataset = tf.data.Dataset.from_tensor_slices((train_image_paths, train_labels))
 train_dataset = train_dataset.shuffle(len(train_dataset))
-train_dataset = train_dataset.map(
-    parse_function, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-train_dataset = train_dataset.map(
-    augmentation_fn, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-train_dataset = train_dataset.map(
-    make_grayscale_fn, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+train_dataset = train_dataset.map(parse_function, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+train_dataset = train_dataset.map(augmentation_fn, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+train_dataset = train_dataset.map(make_grayscale_fn, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 train_dataset = train_dataset.batch(32)
 
 # prefetch the train dataset
@@ -54,17 +49,14 @@ test_csv = os.path.join(train_test_validate_root, 'test.csv')
 test_reports = pd.read_csv(test_csv).replace(replaced_values).values
 
 # get test dataset image paths
-test_image_paths = [os.path.join(dataset_root, path)
-                    for path in test_reports[:, 0]]
+test_image_paths = [os.path.join(dataset_root, path) for path in test_reports[:, 0]]
 
 # get test dataset labels (class)
 test_labels = np.uint8(test_reports[:, 2:])
 
 # create test dataset
-test_dataset = tf.data.Dataset.from_tensor_slices(
-    (test_image_paths, test_labels))
-test_dataset = test_dataset.map(
-    parse_function, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+test_dataset = tf.data.Dataset.from_tensor_slices((test_image_paths, test_labels))
+test_dataset = test_dataset.map(parse_function, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 test_dataset = test_dataset.batch(16)
 
 # prefetch the test dataset
@@ -81,19 +73,15 @@ validate_csv = os.path.join(train_test_validate_root, 'validate.csv')
 validate_reports = pd.read_csv(validate_csv).replace(replaced_values).values
 
 # get validate dataset image paths
-validate_image_paths = [os.path.join(
-    dataset_root, path) for path in validate_reports[:, 0]]
+validate_image_paths = [os.path.join(dataset_root, path) for path in validate_reports[:, 0]]
 
 # get validate dataset labels (class)
 validate_labels = np.uint8(validate_reports[:, 2:])
 
 # create validate dataset
-validate_dataset = tf.data.Dataset.from_tensor_slices(
-    (validate_image_paths, validate_labels))
-validate_dataset = validate_dataset.map(
-    parse_function, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-validate_dataset = validate_dataset.map(
-    make_grayscale_fn, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+validate_dataset = tf.data.Dataset.from_tensor_slices((validate_image_paths, validate_labels))
+validate_dataset = validate_dataset.map(parse_function, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+validate_dataset = validate_dataset.map(make_grayscale_fn, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 validate_dataset = validate_dataset.batch(16)
 
 # prefetch the validate dataset
