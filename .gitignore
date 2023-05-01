@@ -1,3 +1,5 @@
 .idea
 webapp/react/node_modules
 weights
+model/decoder/__pycache__
+.DS_Store

@@ -46,12 +46,11 @@ if 'attention_maps' not in st.session_state:
 
 def app():
 
-    st.title('Welcome to ChestXpert')
-    st.text('Upload the Chest X-ray image to generate the report')
-
+    # Load models
     transformer, tokenizer = utils.load_model()
     cxr_validator_model = utils.load_validator()
 
+    st.title('Upload Chest X-Ray Image')
     st.sidebar.title('Advanced Configuration')
 
     options = st.sidebar.selectbox('Generation Method', ('Sampling', 'Greedy'))

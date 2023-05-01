@@ -6,7 +6,7 @@ from webapp.streamlit.usability_study import usability_study
 from webapp.streamlit.user_manual import user_manual
 
 # Set page config
-st.set_page_config(layout="wide")
+st.set_page_config(layout="wide", page_title="ChestXpert: Chest X-Ray Report Generation", page_icon="assets/ChestXpert icon.png")
 st.markdown("""
         <style>
                .block-container {
@@ -21,7 +21,31 @@ st.markdown("""
                [data-testid="stVerticalBlock"]{
                     gap: 0rem;
                }
-
+               @media (max-width: 720px) {
+                    [data-testid="stFileUploader"]{
+                        padding-left: 2rem;
+                        padding-right: 2rem;
+                    }
+                    #upload-chest-x-ray-image {
+                        padding-left: 2rem;
+                        padding-right: 2rem;
+                        padding-top: 2rem;
+                    }
+               }
+               @media (min-width: 720px) {
+                    [data-testid="stFileUploader"]{
+                        padding-left: 10rem;
+                        padding-right: 10rem;
+                        padding-top: 2rem;
+                    }
+                    #upload-chest-x-ray-image {
+                        padding-left: 10rem;
+                        padding-right: 10rem;
+                    }
+               }
+               footer {
+                    visibility: hidden;
+               }
         </style>
         """, unsafe_allow_html=True)
 
