@@ -2,4 +2,5 @@
 webapp/react/node_modules
 weights
 model/decoder/__pycache__
-.DS_Store
+webapp/streamlit/__pycache__
+**/.DS_Store
