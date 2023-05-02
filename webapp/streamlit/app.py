@@ -15,9 +15,6 @@ import matplotlib.cm as cm
 with open('config.json') as config_file:
     config = json.load(config_file)
 
-# Define a state to hold the uploaded image
-session = st.session_state
-
 # React Component
 _header = components.declare_component(
     name="st_header",
@@ -52,11 +49,6 @@ if 'attention_maps' not in st.session_state:
     st.session_state['attention_maps'] = None
 
 def app():
-
-    # Load models
-    transformer, tokenizer = utils.load_model()
-    cxr_validator_model = utils.load_validator()
-
     st_header(title='ChestXpert: Chest X-Ray Report Generation', subtitle='A Deep Learning based Chest X-Ray Report Generation System')
     st.write('''<span style="
                        font-size: calc(1.4rem + 1.8vw); 
@@ -65,17 +57,6 @@ def app():
                        Upload Chest X-Ray Image
                 </span>''',
              unsafe_allow_html=True)
-
-
-
-    st.sidebar.title('Advanced Configuration')
-
-    options = st.sidebar.selectbox('Generation Method', ('Sampling', 'Greedy'))
-    seed = st.sidebar.number_input('Sampling Seed:', value=42)
-    temperature = st.sidebar.number_input('Temperature', value=1.)
-    top_k = st.sidebar.slider('top_k', min_value=0, max_value=tokenizer.get_vocab_size(), value=6, step=1)
-    top_p = st.sidebar.slider('top_p', min_value=0., max_value=1., value=1., step=0.01)
-    attention_head = st.sidebar.slider('attention_head', min_value=-1, max_value=7, value=-1, step=1)
 
     st.set_option('deprecation.showfileUploaderEncoding', False)
     uploaded_file = st.file_uploader('Choose an image...', type=('png', 'jpg', 'jpeg'))
@@ -89,20 +70,20 @@ def app():
         base64_string = base64_bytes.decode()
 
         # save the image in the session state
-        session.upload_image = base64_string
+        st.session_state.upload_image = base64_string
 
         # Streamlit.setComponentValue(data, dataScaled)
-        image_data = image_editor(session.upload_image)
+        image_data = image_editor(st.session_state.upload_image)
 
         if image_data is not None:
 
             print('image_data', image_data)
 
             # save edited_image in the session state
-            session.edited_image = image_data
+            st.session_state.edited_image = image_data
 
             # convert base64 to image
-            img = base64.b64decode(session.edited_image.split(',')[1])
+            img = base64.b64decode(st.session_state.edited_image.split(',')[1])
             img_array = np.frombuffer(img, dtype=np.uint8)
             img_array = cv2.imdecode(img_array, cv2.IMREAD_GRAYSCALE)
 
@@ -116,7 +97,7 @@ def app():
             img_array = tf.image.resize_with_pad(img_array, 224, 224, method=tf.image.ResizeMethod.BILINEAR)
 
             # Check image
-            valid = tf.nn.sigmoid(cxr_validator_model(img_array))
+            valid = tf.nn.sigmoid(st.session_state.cxr_validator_model(img_array))
             if valid < 0.1:
                 st.info('Image is not a Chest X-ray')
                 return
@@ -127,10 +108,10 @@ def app():
 
             # Generate radiology report
             with st.spinner('Generating report... Do not refresh or close window.'):
-                result, attention_weights, tokens = utils.evaluate(img_array, tokenizer, transformer,
-                                                     temperature, top_k, top_p,
-                                                     options, seed)
-                predicted_sentence = tokenizer.decode(result)
+                result, attention_weights, tokens = utils.evaluate(img_array, st.session_state.tokenizer, st.session_state.transformer,
+                                                     st.session_state.temperature, st.session_state.top_k, st.session_state.top_p,
+                                                     st.session_state.options, st.session_state.seed)
+                predicted_sentence = st.session_state.tokenizer.decode(result)
 
             # Display generated text
             st.write('''<span style="
@@ -158,13 +139,13 @@ def app():
                      unsafe_allow_html=True)
 
             attn_map = attention_weights[0]  # squeeze
-            if attention_head == -1:  # average attention heads
+            if st.session_state == -1:  # average attention heads
                 attn_map = tf.reduce_mean(attn_map, axis=0)
             else:  # select attention heads
-                attn_map = attn_map[attention_head]
+                attn_map = attn_map[st.session_state.attention_head]
             attn_map = attn_map / attn_map.numpy().max() * 255
 
-            session.attention_maps = attn_map
+            st.session_state.attention_maps = attn_map
             attention_images = {}
             jet_images = {}
             binary_images = {}
@@ -173,7 +154,7 @@ def app():
                 attn_token = tf.reshape(attn_token, [7, 7])
 
                 fig, ax = plt.subplots(1, 1)
-                ax.set_title(tokenizer.decode([result.numpy()[i]]), fontsize=20)
+                ax.set_title(st.session_state.tokenizer.decode([result.numpy()[i]]), fontsize=20)
                 img2 = ax.imshow(np.squeeze(img_array))
                 ax.imshow(attn_token, cmap='gray', alpha=0.6, extent=img2.get_extent())
                 ax.axis('off')
@@ -184,7 +165,7 @@ def app():
                 plot_data = base64.b64encode(buffer.getvalue()).decode()
 
                 # append plot data as value and token as key to attention_images
-                attention_images[tokenizer.decode([result.numpy()[i]])] = plot_data
+                attention_images[st.session_state.tokenizer.decode([result.numpy()[i]])] = plot_data
 
                 # Jet Map
                 # convert to dtype uint8
@@ -218,7 +199,7 @@ def app():
                 superimposed_jet_img = tf.keras.preprocessing.image.array_to_img(superimposed_jet_img)
                 superimposed_jet_img.save(f'superimposed_img${i}.png')
                 fig_jet, ax_jet = plt.subplots(1, 1)
-                ax_jet.set_title(tokenizer.decode([result.numpy()[i]]), fontsize=20)
+                ax_jet.set_title(st.session_state.tokenizer.decode([result.numpy()[i]]), fontsize=20)
                 ax_jet.imshow(np.squeeze(superimposed_jet_img))
                 ax_jet.axis('off')
 
@@ -226,7 +207,7 @@ def app():
                 superimposed_binary_img = tf.keras.preprocessing.image.array_to_img(superimposed_binary_img)
                 superimposed_binary_img.save(f'superimposed_img${i}.png')
                 fig_binary, ax_binary = plt.subplots(1, 1)
-                ax_binary.set_title(tokenizer.decode([result.numpy()[i]]), fontsize=20)
+                ax_binary.set_title(st.session_state.tokenizer.decode([result.numpy()[i]]), fontsize=20)
                 ax_binary.imshow(np.squeeze(superimposed_binary_img))
                 ax_binary.axis('off')
 
@@ -240,8 +221,8 @@ def app():
                 plot_data_binary = base64.b64encode(buffer_binary.getvalue()).decode()
 
                 # append plot data as value and token as key to jet_images
-                jet_images[tokenizer.decode([result.numpy()[i]])] = plot_data_jet
-                binary_images[tokenizer.decode([result.numpy()[i]])] = plot_data_binary
+                jet_images[st.session_state.tokenizer.decode([result.numpy()[i]])] = plot_data_jet
+                binary_images[st.session_state.tokenizer.decode([result.numpy()[i]])] = plot_data_binary
 
 
             # convert the image to bytes
@@ -250,17 +231,17 @@ def app():
             base64_bytes = base64.b64encode(bytes_data)
             base64_string = base64_bytes.decode()
             # save the image in the session state
-            session.upload_image = base64_string
+            st.session_state.upload_image = base64_string
 
             # save the attention_images in the session state
             attention_images = json.dumps(attention_images)
-            session.attention_maps = attention_images
+            st.session_state.attention_maps = attention_images
 
             # save the jet_images in the session state
             jet_images = json.dumps(jet_images)
             binary_images = json.dumps(binary_images)
 
             # display attention maps using React component
-            attention_map(binary_images, jet_images, session.attention_maps, session.upload_image)
+            attention_map(binary_images, jet_images, st.session_state.attention_maps, st.session_state.upload_image)
     else:
         print("No upload image")

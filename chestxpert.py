@@ -1,6 +1,6 @@
 import streamlit as st
 from streamlit_option_menu import option_menu
-
+from webapp.streamlit import utils
 from webapp.streamlit.app import app
 from webapp.streamlit.home import home_page
 from webapp.streamlit.results import results
@@ -15,49 +15,6 @@ st.set_page_config(layout="wide",
                    page_icon="assets/ChestXpert icon.png",
                    initial_sidebar_state="collapsed")
 
-st.markdown("""
-                <style>
-                       .block-container {
-                            padding: 0rem;
-                        }
-                       header {
-                            visibility: hidden !important;
-                       }
-                       [data-testid="stVerticalBlock"]{
-                            gap: 0rem;
-                       }
-                       footer {
-                            display: none;
-                       }
-                       [data-testid="stFileUploader"]{
-                                padding-left: 10%;
-                                padding-right: 10%;
-                       }
-                       .stSpinner {
-                                padding-left: 10%;
-                                padding-right: 10%;
-                                padding-top: 20px;
-                                padding-bottom: 20px;
-                       }
-                       .stProgress {
-                                padding-left: 10%;
-                                padding-right: 10%;
-                                padding-top: 20px;
-                                padding-bottom: 50px;
-                       }
-                       [data-testid="stMarkdownContainer"]{
-                                padding-left: 10%;
-                                padding-right: 10%;
-                       }
-                       [data-testid="collapsedControl"]{
-                                border: 2px solid #8a191d;
-                                border-radius: 10px;
-                                color: #8a191d;
-                                background-color: #FFFFFFC5;
-                       }
-                </style>
-                """, unsafe_allow_html=True)
-
 # Main function
 def main():
     page_names_to_funcs = {
@@ -69,6 +26,26 @@ def main():
         "Configuration": config_page,
         "Contact Us": contact_page
     }
+    # Load models
+    transformer, tokenizer = utils.load_model()
+    cxr_validator_model = utils.load_validator()
+
+    st.session_state['tokenizer'] = tokenizer
+    st.session_state['transformer'] = transformer
+    st.session_state['cxr_validator_model'] = cxr_validator_model
+
+    if 'options' not in st.session_state:
+        st.session_state['options'] = 'Sampling'
+    if 'seed' not in st.session_state:
+        st.session_state['seed'] = 42
+    if 'temperature' not in st.session_state:
+        st.session_state['temperature'] = 1.
+    if 'top_k' not in st.session_state:
+        st.session_state['top_k'] = 6
+    if 'top_p' not in st.session_state:
+        st.session_state['top_p'] = 1.
+    if 'attention_head' not in st.session_state:
+        st.session_state['attention_head'] = -1
 
     with st.sidebar:
         selected = option_menu('Main Menu',
@@ -82,6 +59,70 @@ def main():
                                    "nav-link-selected": {"background-color": "#c52a25"},
                                }
                            )
+    if selected != "Configuration":
+        st.markdown("""
+                    <style>
+                           .block-container {
+                                padding: 0rem;
+                            }
+                           header {
+                                visibility: hidden !important;
+                           }
+                           [data-testid="stVerticalBlock"]{
+                                gap: 0rem;
+                           }
+                           footer {
+                                display: none;
+                           }
+                           [data-testid="stFileUploader"]{
+                                    padding-left: 10%;
+                                    padding-right: 10%;
+                           }
+                           .stSpinner {
+                                    padding-left: 10%;
+                                    padding-right: 10%;
+                                    padding-top: 20px;
+                                    padding-bottom: 20px;
+                           }
+                           .stProgress {
+                                    padding-left: 10%;
+                                    padding-right: 10%;
+                                    padding-top: 20px;
+                                    padding-bottom: 50px;
+                           }
+                           [data-testid="stMarkdownContainer"]{
+                                    padding-left: 10%;
+                                    padding-right: 10%;
+                           }
+                           [data-testid="collapsedControl"]{
+                                    border: 2px solid #8a191d;
+                                    border-radius: 10px;
+                                    color: #8a191d;
+                                    background-color: #FFFFFFC5;
+                           }
+                    </style>
+                    """, unsafe_allow_html=True)
+    else:
+        st.markdown("""
+                    <style>
+                        p { 
+                                font-size: calc(1rem + .4vw)!important;
+                                font-weight: 600!important;
+                        }
+                        .st-af {
+                                font-size: 1.2rem!important;
+                        }
+                        .StyledThumbValue {
+                                font-size: 1rem!important;
+                        }
+                        [data-testid="stTickBarMin"] {
+                                font-size: 1rem!important;
+                        }
+                        [data-testid="stTickBarMax"] {
+                                font-size: 1rem!important;
+                        }
+                    </style>
+                    """, unsafe_allow_html=True)
 
     page_names_to_funcs[selected]()
 
