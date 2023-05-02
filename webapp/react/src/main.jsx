@@ -6,6 +6,7 @@ import AttentionMap from "./AttentionMap.jsx";
 import Results from "./Results.jsx";
 import UsabilityStudy from "./UsabilityStudy.jsx";
 import UserManual from "./UserManual.jsx";
+import StHeader from "./components/common/StHeader.jsx";
 import {
   createBrowserRouter,
   RouterProvider,
@@ -36,6 +37,10 @@ const router = createBrowserRouter([
   {
     path: "/user-manual",
     element: <UserManual/>
+  },
+  {
+    path: "/st-header",
+    element: <StHeader/>
   }
 ]);
 

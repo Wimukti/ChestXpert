@@ -6,29 +6,49 @@ from webapp.streamlit.usability_study import usability_study
 from webapp.streamlit.user_manual import user_manual
 
 # Set page config
-st.set_page_config(layout="wide", page_title="ChestXpert: Chest X-Ray Report Generation",
-                   page_icon="assets/ChestXpert icon.png")
-st.markdown("""
-        <style>
-               .block-container {
-                    padding: 0rem;
-                }
-               header {
-                    visibility: hidden !important;
-               }
-               [data-testid="stVerticalBlock"]{
-                    gap: 0rem;
-               }
+st.set_page_config(layout="wide",
+                   page_title="ChestXpert: Chest X-Ray Report Generation",
+                   page_icon="assets/ChestXpert icon.png",
+                   initial_sidebar_state="collapsed")
 
-               footer {
-                    display: none;
-               }
-        </style>
-        """, unsafe_allow_html=True)
+st.markdown("""
+                <style>
+                       .block-container {
+                            padding: 0rem;
+                        }
+                       header {
+                            visibility: hidden !important;
+                       }
+                       [data-testid="stVerticalBlock"]{
+                            gap: 0rem;
+                       }
+                       footer {
+                            display: none;
+                       }
+                       [data-testid="stFileUploader"]{
+                                padding-left: 10%;
+                                padding-right: 10%;
+                       }
+                       .stSpinner {
+                                padding-left: 10%;
+                                padding-right: 10%;
+                                padding-top: 20px;
+                                padding-bottom: 20px;
+                       }
+                       .stProgress {
+                                padding-left: 10%;
+                                padding-right: 10%;
+                                padding-top: 20px;
+                                padding-bottom: 50px;
+                       }
+                       [data-testid="stMarkdownContainer"]{
+                                padding-left: 10%;
+                                padding-right: 10%;
+                       }
+                </style>
+                """, unsafe_allow_html=True)
 
 # Main function
-
-
 def main():
     page_names_to_funcs = {
         "Home": home_page,
@@ -39,9 +59,8 @@ def main():
     }
 
     st.sidebar.title("Navigation")
-    demo_name = st.sidebar.selectbox("", page_names_to_funcs.keys())
-    page_names_to_funcs[demo_name]()
-
+    page = st.sidebar.selectbox("", page_names_to_funcs.keys())
+    page_names_to_funcs[page]()
 
 # Main function call
 if __name__ == '__main__':

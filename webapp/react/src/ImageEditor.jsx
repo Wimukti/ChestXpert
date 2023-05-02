@@ -15,6 +15,8 @@ class ImageEditor extends StreamlitComponentBase {
         zoom: 1,
         image: null,
         showInputImage: true,
+        showEditedImage: false,
+        editedImage: null,
         rotate: 0,
     }
 
@@ -26,6 +28,8 @@ class ImageEditor extends StreamlitComponentBase {
         const canvas = this.editor.getImage()
         const data = canvas.toDataURL('image/jpeg')
         this.setState({showInputImage: false})
+        this.setState({editedImage: data})
+        this.setState({showEditedImage: true})
         Streamlit.setComponentValue(data)
     }
 
@@ -37,37 +41,36 @@ class ImageEditor extends StreamlitComponentBase {
             this.setState({ image: upload_image, showAttentionMaps: false})
         }
     }
-
     render = () => {
         if (this.state.showInputImage) {
             return (
-                <div >
-                    <Grid container spacing={2} justifyContent="center">
+                <div style={{paddingLeft: '10%', paddingRight: '10%'}}>
+                    <Grid container spacing={2}>
                         <Grid item xs={12} lg={6}>
                             <div style={{
                                 display: 'flex',
                                 flexDirection: 'column',
-                                alignItems: 'center',
+                                alignItems: 'flex-start',
                                 justifyContent: 'center'
                             }}>
-                                <Typography style={{margin: '20px'}}>Edit the image </Typography>
+                                <Typography style={{margin: '20px 0px', fontSize: 'calc(1.3rem + .6vw)', fontWeight: 600}}>Edit the Chest X-Ray to fit the box</Typography>
                                 <AvatarEditor
                                     ref={this.setEditorRef}
                                     image={`data:image/jpeg;base64,${this.state.image}`}
                                     width={this.state.width}
                                     height={this.state.height}
                                     border={50}
-                                    color={[255, 255, 255, 0.6]} // RGBA
+                                    color={[0, 0, 0, 0.6]} // RGBA
                                     scale={this.state.zoom}
                                     rotate={this.state.rotate}
                                 />
                             </div>
                         </Grid>
                     </Grid>
-                    <Grid container spacing={2} justifyContent="center">
+                    <Grid container spacing={2} >
                         <Grid item xs={12} sm={6}>
-                            <div style={{display: 'flex', alignItems: 'center', marginTop: '50px'}}>
-                                <Typography style={{marginRight: '20px'}}>Zoom: </Typography>
+                            <div style={{display: 'flex', alignItems: 'center', marginTop: '30px'}}>
+                                <Typography style={{marginRight: '20px', fontSize: 'calc(1rem + .4vw)', fontWeight: 500}}>Zoom&nbsp;&nbsp;</Typography>
                                 <Slider
                                     aria-label="Default"
                                     valueLabelDisplay="auto"
@@ -84,10 +87,10 @@ class ImageEditor extends StreamlitComponentBase {
                             </div>
                         </Grid>
                     </Grid>
-                    <Grid container spacing={2} justifyContent="center">
+                    <Grid container spacing={2}>
                         <Grid item xs={12} sm={6}>
-                            <div style={{display: 'flex', alignItems: 'center', marginTop: '20px'}}>
-                                <Typography style={{marginRight: '20px'}}>Rotate: </Typography>
+                            <div style={{display: 'flex', alignItems: 'center', marginTop: '10px'}}>
+                                <Typography style={{marginRight: '20px', fontSize: 'calc(1rem + .4vw)', fontWeight: 500}}>Rotate </Typography>
                                 <Slider
                                     aria-label="Default"
                                     valueLabelDisplay="false"
@@ -104,10 +107,10 @@ class ImageEditor extends StreamlitComponentBase {
                             </div>
                         </Grid>
                     </Grid>
-                    <Grid container spacing={2} justifyContent="center">
+                    <Grid container spacing={2}>
                         <Grid item xs={12} sm={6}>
-                            <div style={{display: 'flex', alignItems: 'center', marginTop: '20px'}}>
-                                <Typography style={{marginRight: '20px'}}>Width: </Typography>
+                            <div style={{display: 'flex', alignItems: 'center', marginTop: '10px'}}>
+                                <Typography style={{marginRight: '20px', fontSize: 'calc(1rem + .4vw)', fontWeight: 500}}>Width&nbsp;</Typography>
                                 <Slider
                                     aria-label="Default"
                                     valueLabelDisplay="false"
@@ -117,6 +120,7 @@ class ImageEditor extends StreamlitComponentBase {
                                     }}
                                     min={250}
                                     max={500}
+                                    backgroundColor='#fc4c4c'
                                     step={1}
                                     defaultValue={250}
                                     aria-labelledby="continuous-slider"
@@ -124,10 +128,10 @@ class ImageEditor extends StreamlitComponentBase {
                             </div>
                         </Grid>
                     </Grid>
-                    <Grid container spacing={2} justifyContent="center">
+                    <Grid container spacing={2}>
                         <Grid item xs={12} sm={6}>
-                            <div style={{display: 'flex', alignItems: 'center', marginTop: '20px'}}>
-                                <Typography style={{marginRight: '20px'}}>Height: </Typography>
+                            <div style={{display: 'flex', alignItems: 'center', marginTop: '10px'}}>
+                                <Typography style={{marginRight: '20px', fontSize: 'calc(1rem + .4vw)', fontWeight: 500}}>Height</Typography>
                                 <Slider
                                     aria-label="Default"
                                     valueLabelDisplay="false"
@@ -143,7 +147,22 @@ class ImageEditor extends StreamlitComponentBase {
                                 />
                             </div>
                             <div style={{display: 'flex', alignItems: 'center', marginTop: '20px', justifyContent: 'center'}}>
-                                <Button variant="contained" onClick={this.handleSave}>Done</Button>
+                                <Button style={{backgroundColor: '#fc4c4c'}} variant="contained" size="medium" onClick={this.handleSave}>Done</Button>
+                            </div>
+                        </Grid>
+                    </Grid>
+                </div>
+            )
+        } else if (this.state.showEditedImage) {
+            return (
+                <div style={{paddingLeft: '10%', paddingRight: '10%'}}>
+                    <Grid container spacing={2}>
+                        <Grid item xs={12} lg={6}>
+                            <div style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                            }}>
+                                <img src={this.state.editedImage} alt="edited image" style={{width: '40%'}}/>
                             </div>
                         </Grid>
                     </Grid>

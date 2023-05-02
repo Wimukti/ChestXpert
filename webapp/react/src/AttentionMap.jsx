@@ -18,8 +18,10 @@ class AttentionMap extends StreamlitComponentBase {
         super.componentDidMount();
 
         let att_maps = this.props.args["attention_maps"];
+        let jet_maps = this.props.args["jet_maps"];
+        let binary_maps = this.props.args["binary_maps"];
         let resized_img = this.props.args["resized_img"];
-        console.log(att_maps)
+
         if (att_maps) {
             const maps = JSON.parse(att_maps)
             const imageSets = [];
@@ -35,7 +37,7 @@ class AttentionMap extends StreamlitComponentBase {
     render = () => {
 
         if (this.state.showAttentionMaps) {
-            return <div style={{minHeight: 450}}>
+            return <div style={{minHeight: 450, paddingLeft: '10%', paddingRight: '10%'}}>
                 <Carousel
                 navButtonsAlwaysVisible={true}
                 animation={"slide"}
