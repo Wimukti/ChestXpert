@@ -12,6 +12,8 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import './main.css'
+import ContactUs from "./ContactUs";
+import Config from "./Config";
 
 const router = createBrowserRouter([
   {
@@ -41,6 +43,14 @@ const router = createBrowserRouter([
   {
     path: "/st-header",
     element: <StHeader/>
+  },
+  {
+    path: "/contact-us",
+    element: <ContactUs/>,
+  },
+  {
+    path: "/config",
+    element: <Config/>,
   }
 ]);
 
