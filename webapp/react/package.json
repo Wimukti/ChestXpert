@@ -20,7 +20,8 @@
     "react-material-ui-carousel": "^3.4.2",
     "react-router-dom": "^6.10.0",
     "react-slider": "^2.0.4",
-    "streamlit-component-lib": "^1.4.0"
+    "streamlit-component-lib": "^1.4.0",
+    "swiper": "^9.2.4"
   },
   "devDependencies": {
     "@types/react": "^18.0.27",
