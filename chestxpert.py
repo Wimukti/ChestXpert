@@ -50,7 +50,7 @@ st.markdown("""
                                 padding-right: 10%;
                        }
                        [data-testid="collapsedControl"]{
-                                border: 2px solid red;
+                                border: 2px solid #8a191d;
                                 border-radius: 10px;
                                 color: #8a191d;
                                 background-color: #FFFFFFC5;
@@ -75,7 +75,11 @@ def main():
                                ["Home", 'Results', 'Usability', 'User Manual', 'ChestXpert', 'Configuration', 'Contact Us'],
                                icons=['house', 'bar-chart', 'people', 'map', 'file-earmark-medical', 'gear', 'telephone'], menu_icon="cast", default_index=0,
                                styles={
-                                   "container": {"padding": "0!important", "background-color": "#fafafa"},
+                                   "container": {"padding": "0!important", "background-color": "rgb(240, 242, 246)"},
+                                   "menu-title": {"font-family": ['Muli', 'Helvetica', 'Arial', 'sans-serif'], "font-size": "25px"},
+                                   "icon": {"font-size": "20px"},
+                                   "nav-link": {"font-family": ['Muli', 'Helvetica', 'Arial', 'sans-serif'], "font-size": "20px"},
+                                   "nav-link-selected": {"background-color": "#c52a25"},
                                }
                            )
 
