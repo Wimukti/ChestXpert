@@ -13,14 +13,17 @@ import "swiper/css/zoom";
 
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
+import PdfComponent from "./components/pdf/PdfComponent";
 
+import * as React from 'react';
+import Switch from '@mui/material/Switch';
 class AttentionMap extends StreamlitComponentBase {
     state = {
         att_maps: [],
         jet_maps:[],
         binary_maps: [],
         displayedMap:[],
-        resizedImg: null,
+        resizedImg: '',
         showResizedImg: false,
         selectedMap:'attention'
     }
@@ -57,11 +60,17 @@ class AttentionMap extends StreamlitComponentBase {
 
         if (true) {
             return <div style={{  paddingTop: 20}}>
+            
               <ButtonGroup style={{marginBottom:15, paddingLeft: '10%', paddingRight: '10%'}}>
                 <Button variant={this.state.selectedMap==='attention'?"contained":"outlined"} onClick={()=>this.setState({displayedMap:this.state.att_maps, selectedMap:'attention'})}>Attention Map</Button>
                 <Button variant={this.state.selectedMap==='jet'?"contained":"outlined"} onClick={()=>this.setState({displayedMap:this.state.jet_maps, selectedMap:'jet'})}>Jet Map</Button>
                 <Button variant={this.state.selectedMap==='binary'?"contained":"outlined"} onClick={()=>this.setState({displayedMap:this.state.binary_maps, selectedMap:'binary'})}>Binary Map</Button>
+                <div>
+                  <Switch checked={!this.state.showResizedImg} onChange={()=>this.setState({showResizedImg: !this.state.showResizedImg})}/> 
+                  Show explainability Map
+                </div>
               </ButtonGroup>
+
               <div style={{paddingLeft: '3%', paddingRight: '3%'}}>
                   <Swiper
                   zoom={true}
@@ -82,7 +91,7 @@ class AttentionMap extends StreamlitComponentBase {
                   }}
                   >
                     {this.state.displayedMap.map((imageSet,index) => (
-                    <SwiperSlide style={{textAlign:'center', display:'flex', justifyContent:'center'}}>
+                    <SwiperSlide key={index} style={{textAlign:'center', display:'flex', justifyContent:'center'}}>
                       <div
                                   style={{
                                     height: 300,
@@ -122,69 +131,12 @@ class AttentionMap extends StreamlitComponentBase {
                     </SwiperSlide>))}
                 </Swiper>
               </div>
-              
-                {/* <Carousel
-                navButtonsAlwaysVisible={true}
-                animation={"slide"}
-                autoPlay={false}
-                >
-                  {
-                    // Map through the array of arrays to create sets of images
-                    this.state.att_maps.map((imageSet,index) => (
-                      <Grid container spacing={2} key={index}>
-                        {
-                          // Map through the images in the set to create grid items
-                          imageSet.map((image) => (
-                            <Grid item xs={12} sm={6} md={3} lg={3}>
-                                <Typography style={{margin: '20px'}}></Typography>
-                              <div
-                                style={{
-                                  height: 300,
-                                  width:280,
-                                  overflow: 'hidden',
-                                  display: 'flex',
-                                  justifyContent: 'center',
-                                  alignItems: 'center',
-                                    position:'relative',
-                                }}
-                              >
-                                  {this.state.showResizedImg && <img
-                                      style={{
-                                          height: 230,
-                                          width: '75%',
-                                          left: '38px',
-                                          top: 36,
-                                          position: 'absolute',
-                                          objectFit: 'cover',
-
-                                      }}
-                                      alt="The house from the offer."
-                                      src={`data:image/jpeg;base64,${this.state.resizedImg}`}
-                                  />}
-                                <img
-                                  style={{
-                                    height: '100%',
-                                    width: '75%',
-                                    objectFit: 'cover',
-                                    objectPosition: '50% 50%'
-                                  }}
-                                  alt="The house from the offer."
-                                  src={`data:image/jpeg;base64,${image}`}
-                                />
-                              </div>
-                            </Grid>
-                          ))
-                        }
-                      </Grid>
-                    ))
-                  }
-                </Carousel> */}
                 <div style={{paddingLeft: '10%', paddingRight: '10%'}}>
-                  <Button  variant="contained" onClick={()=> {this.setState({showResizedImg: !this.state.showResizedImg})}}> 
-                    {this.state.showResizedImg?'Show':'Hide'} Attention 
-                  </Button>
+                    <PdfComponent 
+                      report={'Kasun is pro max'} 
+                      originalImg={`data:image/jpeg;base64,${this.state.resizedImg}`}
+                  />
                 </div>
-                
             </div>
         } else {
             return <div></div>

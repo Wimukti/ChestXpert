@@ -1,0 +1,9 @@
+@media screen {
+	.pdfDownloader {
+		display: none;
+	}
+}
+
+.content{
+    margin: 10px 20px;
+}
