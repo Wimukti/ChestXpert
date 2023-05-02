@@ -35,7 +35,7 @@ def image_editor(upload_image):
     return _image_editor(upload_image=upload_image)
 
 def attention_map(binary_maps, jet_maps, attention_maps, resized_img):
-    return _attention_map(binary_maps=binary_maps, jet_maps=jet_maps, attention_maps=binary_maps, resized_img=resized_img)
+    return _attention_map(binary_maps=binary_maps, jet_maps=jet_maps, attention_maps=attention_maps, resized_img=resized_img)
 
 def st_header(title, subtitle):
     return _header(title=title, subtitle=subtitle)
