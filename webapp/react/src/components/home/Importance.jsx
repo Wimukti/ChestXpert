@@ -4,8 +4,6 @@ import Grid from '@mui/material/Grid';
 export default function Intro() {
     return (
         <div className='section-white'>
-
-
             <div className='section'>
                 <div>
                     <Grid container spacing={5}>
