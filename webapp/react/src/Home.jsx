@@ -7,17 +7,18 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Header from "./components/common/Header";
 import Footer from "./components/common/Footer";
 import Intro from "./components/home/Intro";
-import OurModel from "./components/home/OurModel";
+import Overview from "./components/home/Overview";
 import Dataset from "./components/home/Dataset";
 import Importance from "./components/home/Importance";
-
+import Model from "./components/home/Model";
 class Home extends StreamlitComponentBase {
     render = () => {
         return  (
         <div>
-            <Header title="CheXNet: Radiologist-Level Pneumonia Detection on Chest X-Rays with Deep Learning" subtitle="Pranav Rajpurkar*, Jeremy Irvin*, Kaylie Zhu, Brandon Yang, Hershel Mehta, Tony Duan, Daisy Ding, Aarti Bagul, Curtis Langlotz, Katie Shpanskaya, Matthew P. Lungren, Andrew Y. Ng"/>
+            <Header title="ChestXpert: Revolutionize Chest X-ray Report Generation with ChestXpert" subtitle="Looking for a faster, more accurate way to diagnose chest X-rays? Look no further than ChestXpert - the radiologist-approved framework that uses cutting-edge Deep Learning techniques to analyze and generate detailed reports. With ChestXpert, you can streamline your radiology workflow and get the results you need in seconds."/>
             <Intro/>
-            <OurModel/>
+            <Overview/>
+            <Model/>
             <Dataset/>
             <Importance/>
             <Footer/>
