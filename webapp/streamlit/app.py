@@ -129,7 +129,7 @@ def app():
                                         {}
                                 </span>'''.format(predicted_sentence),
                         unsafe_allow_html=True)
-
+            st.write("---")
             st.write('''<span style="
                                        font-size: calc(1.3rem + .6vw); 
                                        font-weight: 600; 

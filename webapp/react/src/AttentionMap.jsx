@@ -17,6 +17,8 @@ import PdfComponent from "./components/pdf/PdfComponent";
 
 import * as React from 'react';
 import Switch from '@mui/material/Switch';
+import Typography from "@mui/material/Typography";
+import {Divider} from "@mui/material";
 class AttentionMap extends StreamlitComponentBase {
     state = {
         att_maps: [],
@@ -59,16 +61,12 @@ class AttentionMap extends StreamlitComponentBase {
     render = () => {
 
         if (true) {
-            return <div style={{  paddingTop: 20}}>
+            return <div style={{  paddingTop: 20,}}>
             
               <ButtonGroup style={{marginBottom:15, paddingLeft: '10%', paddingRight: '10%'}}>
                 <Button variant={this.state.selectedMap==='attention'?"contained":"outlined"} onClick={()=>this.setState({displayedMap:this.state.att_maps, selectedMap:'attention'})}>Attention Map</Button>
                 <Button variant={this.state.selectedMap==='jet'?"contained":"outlined"} onClick={()=>this.setState({displayedMap:this.state.jet_maps, selectedMap:'jet'})}>Jet Map</Button>
                 <Button variant={this.state.selectedMap==='binary'?"contained":"outlined"} onClick={()=>this.setState({displayedMap:this.state.binary_maps, selectedMap:'binary'})}>Binary Map</Button>
-                <div>
-                  <Switch checked={!this.state.showResizedImg} onChange={()=>this.setState({showResizedImg: !this.state.showResizedImg})}/> 
-                  Show explainability Map
-                </div>
               </ButtonGroup>
 
               <div style={{paddingLeft: '3%', paddingRight: '3%'}}>
@@ -131,6 +129,14 @@ class AttentionMap extends StreamlitComponentBase {
                     </SwiperSlide>))}
                 </Swiper>
               </div>
+                <div style={{marginBottom:15, paddingLeft: '10%', paddingRight: '10%'}}>
+                  <Switch checked={!this.state.showResizedImg} onChange={()=>this.setState({showResizedImg: !this.state.showResizedImg})}/>
+                  Show explainability Map
+                </div>
+                <Divider sx={{margin: '30px auto', width: '80%'}} />
+                <div style={{marginBottom:15, paddingLeft: '10%', paddingRight: '10%'}}>
+                  <Typography sx={{fontSize: 'calc(1.3rem + .6vw)', fontWeight: 600}}>Download Medical Report</Typography>
+                </div>
                 <div style={{paddingLeft: '10%', paddingRight: '10%'}}>
                     <PdfComponent 
                       report={'Kasun is pro max'} 
