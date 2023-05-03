@@ -9,32 +9,18 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import {createTheme, ThemeProvider} from '@mui/material/styles';
-
+import Header from "./components/common/Header";
+import Footer from "./components/common/Footer";
+import Main from "./components/usability/Main";
 
 class UsabilityStudy extends StreamlitComponentBase {
     theme = createTheme();
     render = () => {
         return <div>
-            <ThemeProvider theme={this.theme}>
-                <Grid container component="main" sx={{height: '100vh'}}>
-                    <CssBaseline/>
-                    <Grid item xs={12} component={Paper} elevation={6} square>
-                        <Box
-                            sx={{
-                                my: 8,
-                                mx: 4,
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                            }}
-                        >
-                            <Typography component="h1" variant="h5">
-                                Usability Study
-                            </Typography>
-                        </Box>
-                    </Grid>
-                </Grid>
-            </ThemeProvider>
+            <Header title="ChestXpert: Usability"
+                        subtitle="Looking for a faster, more accurate way to diagnose chest X-rays? Look no further than ChestXpert - the radiologist-approved framework that uses cutting-edge Deep Learning techniques to analyze and generate detailed reports. With ChestXpert, you can streamline your radiology workflow and get the results you need in seconds."/>
+                <Main/>
+                <Footer/>
         </div>
     }
 }
