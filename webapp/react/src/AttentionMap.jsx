@@ -28,7 +28,8 @@ class AttentionMap extends StreamlitComponentBase {
         displayedMap: [],
         resizedImg: '',
         showResizedImg: false,
-        selectedMap: 'attention'
+        selectedMap: 'attention',
+        report:''
     }
 
     componentDidMount() {
@@ -38,7 +39,7 @@ class AttentionMap extends StreamlitComponentBase {
         let jet_maps = this.props.args["jet_maps"];
         let binary_maps = this.props.args["binary_maps"];
         let resized_img = this.props.args["resized_img"];
-        this.setState({resizedImg: resized_img})
+        this.setState({resizedImg: resized_img, report:this.props.args["report"]})
 
         if (att_maps) {
             const maps = JSON.parse(att_maps)
@@ -153,7 +154,7 @@ class AttentionMap extends StreamlitComponentBase {
                 </div>
                 <div style={{paddingLeft: '10%', paddingRight: '10%'}}>
                     <PdfComponent
-                        report={'Kasun is pro max'}
+                        report={this.state.report}
                         originalImg={`data:image/jpeg;base64,${this.state.resizedImg}`}
                     />
                 </div>

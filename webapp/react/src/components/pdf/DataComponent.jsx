@@ -7,9 +7,31 @@ class DataComponent extends React.Component {
     render() {
         return (
             <div className='pdfDownloader'>
-                <Header title="ChestXpert: PDF Report"
-                        subtitle="By Wimukthi Indeewara, Mahela Hennayake, Kasun Rathnayake, Sahan Samarakoon"/>
+                <div style={{marginBottom:40}}>
+                <Header  title="ChestXpert: PDF Report"
+                        subtitle="Developed by Wimukthi Indeewara, Mahela Hennayake, Kasun Rathnayake, Sahan Samarakoon"/>
+                </div>
+              
                 <div className='content'>
+                    {this.props.showUserDetails}
+
+                    {
+                        this.props.showUserDetails &&
+                        <div style={{marginBottom: 40}}>
+                            <h1>Patient Details:</h1>
+                            <div>
+                                <div>
+                                    Name: {this.props.patientDetails.name}
+                                </div>
+                                <div>
+                                    Age: {this.props.patientDetails.age} years old
+                                </div>
+                                <div>
+                                    Sex: {this.props.patientDetails.sex}
+                                </div>
+                            </div>
+                    </div>
+                    }
                     <div style={{marginBottom: 40}}>
                         <h1>Original X-Ray:</h1>
                         <div>
