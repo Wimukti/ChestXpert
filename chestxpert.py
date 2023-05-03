@@ -100,6 +100,10 @@ def main():
                                     color: #8a191d;
                                     background-color: #FFFFFFC5;
                            }
+                           p { 
+                                font-size: calc(1rem + .4vw)!important;
+                                font-weight: 600!important;
+                           }
                     </style>
                     """, unsafe_allow_html=True)
     else:
@@ -121,6 +125,10 @@ def main():
                         [data-testid="stTickBarMax"] {
                                 font-size: 1rem!important;
                         }
+                        [data-testid="stMarkdownContainer"] {
+                                font-size: 1.3rem!important;
+                        }
+                        
                     </style>
                     """, unsafe_allow_html=True)
 

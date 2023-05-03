@@ -54,12 +54,12 @@ def app():
                        font-size: calc(1.4rem + 1.8vw); 
                        font-weight: 700; 
                        font-weight: bold;">
-                       Upload Chest X-Ray Image
+                       Upload Your Chest X-Ray Image
                 </span>''',
              unsafe_allow_html=True)
 
     st.set_option('deprecation.showfileUploaderEncoding', False)
-    uploaded_file = st.file_uploader('Choose an image...', type=('png', 'jpg', 'jpeg'))
+    uploaded_file = st.file_uploader('Choose a Chest X-Ray Image...', type=('png', 'jpg', 'jpeg'))
 
     if uploaded_file:
         # convert the image to bytes
@@ -197,7 +197,7 @@ def app():
 
                 superimposed_jet_img = jet_heatmap * 0.6 + img * 0.4
                 superimposed_jet_img = tf.keras.preprocessing.image.array_to_img(superimposed_jet_img)
-                superimposed_jet_img.save(f'superimposed_img${i}.png')
+                # superimposed_jet_img.save(f'superimposed_img${i}.png')
                 fig_jet, ax_jet = plt.subplots(1, 1)
                 ax_jet.set_title(st.session_state.tokenizer.decode([result.numpy()[i]]), fontsize=20)
                 ax_jet.imshow(np.squeeze(superimposed_jet_img))
@@ -205,7 +205,7 @@ def app():
 
                 superimposed_binary_img = binary_heatmap * 0.6 + img * 0.4
                 superimposed_binary_img = tf.keras.preprocessing.image.array_to_img(superimposed_binary_img)
-                superimposed_binary_img.save(f'superimposed_img${i}.png')
+                # superimposed_binary_img.save(f'superimposed_img${i}.png')
                 fig_binary, ax_binary = plt.subplots(1, 1)
                 ax_binary.set_title(st.session_state.tokenizer.decode([result.numpy()[i]]), fontsize=20)
                 ax_binary.imshow(np.squeeze(superimposed_binary_img))
