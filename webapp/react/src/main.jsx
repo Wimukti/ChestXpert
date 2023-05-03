@@ -8,54 +8,54 @@ import UsabilityStudy from "./UsabilityStudy.jsx";
 import UserManual from "./UserManual.jsx";
 import StHeader from "./components/common/StHeader.jsx";
 import {
-  createBrowserRouter,
-  RouterProvider,
+    createBrowserRouter,
+    RouterProvider,
 } from "react-router-dom";
 import './main.css'
 import ContactUs from "./ContactUs";
 import Config from "./Config";
 
 const router = createBrowserRouter([
-  {
-    path: "/home",
-    element: <Home/>,
-  },
-  {
-    path: "/image-editor",
-    element: <ImageEditor/>
-  },
-  {
-    path: "/attention-map",
-    element: <AttentionMap/>
-  },
-  {
-    path: "/results",
-    element: <Results/>
-  },
-  {
-    path: "/usability-study",
-    element: <UsabilityStudy/>
-  },
-  {
-    path: "/user-manual",
-    element: <UserManual/>
-  },
-  {
-    path: "/st-header",
-    element: <StHeader/>
-  },
-  {
-    path: "/contact-us",
-    element: <ContactUs/>,
-  },
-  {
-    path: "/config",
-    element: <Config/>,
-  }
+    {
+        path: "/home",
+        element: <Home/>,
+    },
+    {
+        path: "/image-editor",
+        element: <ImageEditor/>
+    },
+    {
+        path: "/attention-map",
+        element: <AttentionMap/>
+    },
+    {
+        path: "/results",
+        element: <Results/>
+    },
+    {
+        path: "/usability-study",
+        element: <UsabilityStudy/>
+    },
+    {
+        path: "/user-manual",
+        element: <UserManual/>
+    },
+    {
+        path: "/st-header",
+        element: <StHeader/>
+    },
+    {
+        path: "/contact-us",
+        element: <ContactUs/>,
+    },
+    {
+        path: "/config",
+        element: <Config/>,
+    }
 ]);
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <RouterProvider router={router} />
-  </React.StrictMode>,
+    <React.StrictMode>
+        <RouterProvider router={router}/>
+    </React.StrictMode>,
 )

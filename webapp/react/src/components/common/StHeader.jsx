@@ -1,8 +1,8 @@
 import React from 'react'
 import './styles.css';
 import {
-  StreamlitComponentBase,
-  withStreamlitConnection,
+    StreamlitComponentBase,
+    withStreamlitConnection,
 } from "streamlit-component-lib"
 
 class StHeader extends StreamlitComponentBase {
@@ -10,14 +10,16 @@ class StHeader extends StreamlitComponentBase {
         title: '',
         subtitle: '',
     }
+
     componentDidMount() {
         super.componentDidMount();
         let title = this.props.args["title"];
         let subtitle = this.props.args["subtitle"];
         if (title && subtitle) {
-            this.setState({ title: title, subtitle: subtitle})
+            this.setState({title: title, subtitle: subtitle})
         }
     }
+
     render = () => {
         return (
             <div className='header'>

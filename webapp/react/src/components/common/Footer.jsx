@@ -2,13 +2,13 @@ import React from 'react'
 import './styles.css';
 
 function Footer({title, subtitle}) {
-  return (
-    <div className='footer'>
+    return (
+        <div className='footer'>
             <div>
-                <img style={{width:250}} src='/ChestXpert.png'></img>
+                <img style={{width: 250}} src='/ChestXpert.png'></img>
             </div>
-    </div>
-  )
+        </div>
+    )
 }
 
 export default Footer

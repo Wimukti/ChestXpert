@@ -1,7 +1,7 @@
 import {
-  Streamlit,
-  StreamlitComponentBase,
-  withStreamlitConnection,
+    Streamlit,
+    StreamlitComponentBase,
+    withStreamlitConnection,
 } from "streamlit-component-lib"
 import AvatarEditor from 'react-avatar-editor'
 import Slider from '@mui/material/Slider';
@@ -38,9 +38,10 @@ class ImageEditor extends StreamlitComponentBase {
         let upload_image = this.props.args["upload_image"];
 
         if (upload_image) {
-            this.setState({ image: upload_image, showAttentionMaps: false})
+            this.setState({image: upload_image, showAttentionMaps: false})
         }
     }
+
     render = () => {
         if (this.state.showInputImage) {
             return (
@@ -53,7 +54,9 @@ class ImageEditor extends StreamlitComponentBase {
                                 alignItems: 'flex-start',
                                 justifyContent: 'center'
                             }}>
-                                <Typography style={{margin: '20px 0px', fontSize: 'calc(1.3rem + .6vw)', fontWeight: 600}}>Edit the Chest X-Ray to fit the box</Typography>
+                                <Typography
+                                    style={{margin: '20px 0px', fontSize: 'calc(1.3rem + .6vw)', fontWeight: 600}}>Edit
+                                    the Chest X-Ray to fit the box</Typography>
                                 <AvatarEditor
                                     ref={this.setEditorRef}
                                     image={`data:image/jpeg;base64,${this.state.image}`}
@@ -67,10 +70,14 @@ class ImageEditor extends StreamlitComponentBase {
                             </div>
                         </Grid>
                     </Grid>
-                    <Grid container spacing={2} >
+                    <Grid container spacing={2}>
                         <Grid item xs={12} sm={6}>
                             <div style={{display: 'flex', alignItems: 'center', marginTop: '30px'}}>
-                                <Typography style={{marginRight: '20px', fontSize: 'calc(1rem + .4vw)', fontWeight: 500}}>Zoom&nbsp;&nbsp;</Typography>
+                                <Typography style={{
+                                    marginRight: '20px',
+                                    fontSize: 'calc(1rem + .4vw)',
+                                    fontWeight: 500
+                                }}>Zoom&nbsp;&nbsp;</Typography>
                                 <Slider
                                     aria-label="Default"
                                     valueLabelDisplay="auto"
@@ -90,7 +97,11 @@ class ImageEditor extends StreamlitComponentBase {
                     <Grid container spacing={2}>
                         <Grid item xs={12} sm={6}>
                             <div style={{display: 'flex', alignItems: 'center', marginTop: '10px'}}>
-                                <Typography style={{marginRight: '20px', fontSize: 'calc(1rem + .4vw)', fontWeight: 500}}>Rotate </Typography>
+                                <Typography style={{
+                                    marginRight: '20px',
+                                    fontSize: 'calc(1rem + .4vw)',
+                                    fontWeight: 500
+                                }}>Rotate </Typography>
                                 <Slider
                                     aria-label="Default"
                                     valueLabelDisplay="false"
@@ -110,7 +121,11 @@ class ImageEditor extends StreamlitComponentBase {
                     <Grid container spacing={2}>
                         <Grid item xs={12} sm={6}>
                             <div style={{display: 'flex', alignItems: 'center', marginTop: '10px'}}>
-                                <Typography style={{marginRight: '20px', fontSize: 'calc(1rem + .4vw)', fontWeight: 500}}>Width&nbsp;</Typography>
+                                <Typography style={{
+                                    marginRight: '20px',
+                                    fontSize: 'calc(1rem + .4vw)',
+                                    fontWeight: 500
+                                }}>Width&nbsp;</Typography>
                                 <Slider
                                     aria-label="Default"
                                     valueLabelDisplay="false"
@@ -131,7 +146,11 @@ class ImageEditor extends StreamlitComponentBase {
                     <Grid container spacing={2}>
                         <Grid item xs={12} sm={6}>
                             <div style={{display: 'flex', alignItems: 'center', marginTop: '10px'}}>
-                                <Typography style={{marginRight: '20px', fontSize: 'calc(1rem + .4vw)', fontWeight: 500}}>Height</Typography>
+                                <Typography style={{
+                                    marginRight: '20px',
+                                    fontSize: 'calc(1rem + .4vw)',
+                                    fontWeight: 500
+                                }}>Height</Typography>
                                 <Slider
                                     aria-label="Default"
                                     valueLabelDisplay="false"
@@ -146,8 +165,14 @@ class ImageEditor extends StreamlitComponentBase {
                                     aria-labelledby="continuous-slider"
                                 />
                             </div>
-                            <div style={{display: 'flex', alignItems: 'center', marginTop: '20px', justifyContent: 'center'}}>
-                                <Button style={{backgroundColor: '#fc4c4c'}} variant="contained" size="medium" onClick={this.handleSave}>Done</Button>
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                marginTop: '20px',
+                                justifyContent: 'center'
+                            }}>
+                                <Button style={{backgroundColor: '#fc4c4c'}} variant="contained" size="medium"
+                                        onClick={this.handleSave}>Done</Button>
                             </div>
                         </Grid>
                     </Grid>

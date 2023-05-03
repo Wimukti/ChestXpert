@@ -1,10 +1,10 @@
 import {
-  StreamlitComponentBase,
-  withStreamlitConnection,
+    StreamlitComponentBase,
+    withStreamlitConnection,
 } from "streamlit-component-lib"
 
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Zoom, Navigation, Pagination  } from "swiper";
+import {Swiper, SwiperSlide} from 'swiper/react';
+import {Zoom, Navigation, Pagination} from "swiper";
 import 'swiper/css';
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -19,15 +19,16 @@ import * as React from 'react';
 import Switch from '@mui/material/Switch';
 import Typography from "@mui/material/Typography";
 import {Divider} from "@mui/material";
+
 class AttentionMap extends StreamlitComponentBase {
     state = {
         att_maps: [],
-        jet_maps:[],
+        jet_maps: [],
         binary_maps: [],
-        displayedMap:[],
+        displayedMap: [],
         resizedImg: '',
         showResizedImg: false,
-        selectedMap:'attention'
+        selectedMap: 'attention'
     }
 
     componentDidMount() {
@@ -42,64 +43,75 @@ class AttentionMap extends StreamlitComponentBase {
         if (att_maps) {
             const maps = JSON.parse(att_maps)
             const images = Object.keys(maps).map((key) => maps[key]);
-            this.setState({att_maps: images, displayedMap:images})
+            this.setState({att_maps: images, displayedMap: images})
         }
 
         if (jet_maps) {
-          const maps = JSON.parse(jet_maps)
-          const images = Object.keys(maps).map((key) => maps[key]);
-          this.setState({jet_maps: images})
-      }
+            const maps = JSON.parse(jet_maps)
+            const images = Object.keys(maps).map((key) => maps[key]);
+            this.setState({jet_maps: images})
+        }
 
-      if (binary_maps) {
-        const maps = JSON.parse(binary_maps)
-        const images = Object.keys(maps).map((key) => maps[key]);
-        this.setState({binary_maps: images})
-      }
+        if (binary_maps) {
+            const maps = JSON.parse(binary_maps)
+            const images = Object.keys(maps).map((key) => maps[key]);
+            this.setState({binary_maps: images})
+        }
     }
 
     render = () => {
 
         if (true) {
-            return <div style={{  paddingTop: 20,}}>
-            
-              <ButtonGroup style={{marginBottom:15, paddingLeft: '10%', paddingRight: '10%'}}>
-                <Button variant={this.state.selectedMap==='attention'?"contained":"outlined"} onClick={()=>this.setState({displayedMap:this.state.att_maps, selectedMap:'attention'})}>Attention Map</Button>
-                <Button variant={this.state.selectedMap==='jet'?"contained":"outlined"} onClick={()=>this.setState({displayedMap:this.state.jet_maps, selectedMap:'jet'})}>Jet Map</Button>
-                <Button variant={this.state.selectedMap==='binary'?"contained":"outlined"} onClick={()=>this.setState({displayedMap:this.state.binary_maps, selectedMap:'binary'})}>Binary Map</Button>
-              </ButtonGroup>
+            return <div style={{paddingTop: 20,}}>
 
-              <div style={{paddingLeft: '3%', paddingRight: '3%'}}>
-                  <Swiper
-                  zoom={true}
-                  navigation={true}
-                  pagination={{
-                    clickable: true,
-                  }}
-                  modules={[Zoom, Navigation, Pagination]}
-                  breakpoints={{
-                    640: {
-                      slidesPerView: 1,
-                      spaceBetween: 0,
-                    },
-                    1024: {
-                      slidesPerView: 4,
-                      spaceBetween: 0,
-                    },
-                  }}
-                  >
-                    {this.state.displayedMap.map((imageSet,index) => (
-                    <SwiperSlide key={index} style={{textAlign:'center', display:'flex', justifyContent:'center'}}>
-                      <div
-                                  style={{
-                                    height: 300,
-                                    width:280,
-                                    overflow: 'hidden',
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                      position:'relative',
-                                  }}
+                <ButtonGroup style={{marginBottom: 15, paddingLeft: '10%', paddingRight: '10%'}}>
+                    <Button variant={this.state.selectedMap === 'attention' ? "contained" : "outlined"}
+                            onClick={() => this.setState({
+                                displayedMap: this.state.att_maps,
+                                selectedMap: 'attention'
+                            })}>Attention Map</Button>
+                    <Button variant={this.state.selectedMap === 'jet' ? "contained" : "outlined"}
+                            onClick={() => this.setState({displayedMap: this.state.jet_maps, selectedMap: 'jet'})}>Jet
+                        Map</Button>
+                    <Button variant={this.state.selectedMap === 'binary' ? "contained" : "outlined"}
+                            onClick={() => this.setState({
+                                displayedMap: this.state.binary_maps,
+                                selectedMap: 'binary'
+                            })}>Binary Map</Button>
+                </ButtonGroup>
+
+                <div style={{paddingLeft: '3%', paddingRight: '3%'}}>
+                    <Swiper
+                        zoom={true}
+                        navigation={true}
+                        pagination={{
+                            clickable: true,
+                        }}
+                        modules={[Zoom, Navigation, Pagination]}
+                        breakpoints={{
+                            640: {
+                                slidesPerView: 1,
+                                spaceBetween: 0,
+                            },
+                            1024: {
+                                slidesPerView: 4,
+                                spaceBetween: 0,
+                            },
+                        }}
+                    >
+                        {this.state.displayedMap.map((imageSet, index) => (
+                            <SwiperSlide key={index}
+                                         style={{textAlign: 'center', display: 'flex', justifyContent: 'center'}}>
+                                <div
+                                    style={{
+                                        height: 300,
+                                        width: 280,
+                                        overflow: 'hidden',
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        position: 'relative',
+                                    }}
                                 >
                                     {this.state.showResizedImg && <img
                                         style={{
@@ -114,34 +126,36 @@ class AttentionMap extends StreamlitComponentBase {
                                         alt="The house from the offer."
                                         src={`data:image/jpeg;base64,${this.state.resizedImg}`}
                                     />}
-                                  <img
-                                    style={{
-                                      height: '100%',
-                                      width: '75%',
-                                      objectFit: 'cover',
-                                      objectPosition: '50% 50%'
-                                    }}
-                                    alt="The house from the offer."
-                                    src={`data:image/jpeg;base64,${imageSet}`}
-                                  />
+                                    <img
+                                        style={{
+                                            height: '100%',
+                                            width: '75%',
+                                            objectFit: 'cover',
+                                            objectPosition: '50% 50%'
+                                        }}
+                                        alt="The house from the offer."
+                                        src={`data:image/jpeg;base64,${imageSet}`}
+                                    />
                                 </div>
-                            
-                    </SwiperSlide>))}
-                </Swiper>
-              </div>
-                <div style={{marginBottom:15, paddingLeft: '10%', paddingRight: '10%'}}>
-                  <Switch checked={!this.state.showResizedImg} onChange={()=>this.setState({showResizedImg: !this.state.showResizedImg})}/>
-                  Show explainability Map
+
+                            </SwiperSlide>))}
+                    </Swiper>
                 </div>
-                <Divider sx={{margin: '30px auto', width: '80%'}} />
-                <div style={{marginBottom:15, paddingLeft: '10%', paddingRight: '10%'}}>
-                  <Typography sx={{fontSize: 'calc(1.3rem + .6vw)', fontWeight: 600}}>Download Medical Report</Typography>
+                <div style={{marginBottom: 15, paddingLeft: '10%', paddingRight: '10%'}}>
+                    <Switch checked={!this.state.showResizedImg}
+                            onChange={() => this.setState({showResizedImg: !this.state.showResizedImg})}/>
+                    Show explainability Map
+                </div>
+                <Divider sx={{margin: '30px auto', width: '80%'}}/>
+                <div style={{marginBottom: 15, paddingLeft: '10%', paddingRight: '10%'}}>
+                    <Typography sx={{fontSize: 'calc(1.3rem + .6vw)', fontWeight: 600}}>Download Medical
+                        Report</Typography>
                 </div>
                 <div style={{paddingLeft: '10%', paddingRight: '10%'}}>
-                    <PdfComponent 
-                      report={'Kasun is pro max'} 
-                      originalImg={`data:image/jpeg;base64,${this.state.resizedImg}`}
-                  />
+                    <PdfComponent
+                        report={'Kasun is pro max'}
+                        originalImg={`data:image/jpeg;base64,${this.state.resizedImg}`}
+                    />
                 </div>
                 {/*    Vertical Space*/}
                 <div style={{height: '10vh'}}></div>
