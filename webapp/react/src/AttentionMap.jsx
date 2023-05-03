@@ -143,6 +143,8 @@ class AttentionMap extends StreamlitComponentBase {
                       originalImg={`data:image/jpeg;base64,${this.state.resizedImg}`}
                   />
                 </div>
+                {/*    Vertical Space*/}
+                <div style={{height: '10vh'}}></div>
             </div>
         } else {
             return <div></div>
