@@ -4,7 +4,7 @@ import { Box } from '@mui/material';
 
 export default function Intro() {
     return (
-        <div className='section-brown'>
+        <div className='section-white'>
             <div className='section'>
                 <div>
                     <Grid container spacing={5}>
