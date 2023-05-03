@@ -22,8 +22,7 @@ export default function GenaratedReport() {
             </div>
             <div className="section-p">
               If you want to download the generated report, click on the
-              <b> Download</b> button. You can download the generated report in
-              PDF format by clicking .
+              <b> Download</b> button.
             </div>
           </Grid>
           <Grid item xs={12} md={6}>
