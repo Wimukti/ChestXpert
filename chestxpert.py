@@ -52,13 +52,19 @@ def main():
                                ["Home", 'Results', 'Usability', 'User Manual', 'ChestXpert', 'Configuration', 'Contact Us'],
                                icons=['house', 'bar-chart', 'people', 'map', 'file-earmark-medical', 'gear', 'telephone'], menu_icon="cast", default_index=0,
                                styles={
-                                   "container": {"padding": "0!important", "background-color": "rgb(240, 242, 246)"},
+                                   "container": {"padding": "0!important", "background-color": "#c52a2500"},
                                    "menu-title": {"font-family": ['Muli', 'Helvetica', 'Arial', 'sans-serif'], "font-size": "25px"},
                                    "icon": {"font-size": "20px"},
                                    "nav-link": {"font-family": ['Muli', 'Helvetica', 'Arial', 'sans-serif'], "font-size": "20px"},
                                    "nav-link-selected": {"background-color": "#c52a25"},
                                }
                            )
+    st.markdown("""
+                <style>
+                [data-testid="stSidebar"]{
+                }
+    """, unsafe_allow_html=True)
+
     if selected != "Configuration":
         st.markdown("""
                     <style>
