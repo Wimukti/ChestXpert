@@ -1,4 +1,8 @@
-import React, { Component } from "react";
+import {
+  StreamlitComponentBase,
+  withStreamlitConnection,
+} from "streamlit-component-lib";
+import * as React from "react";
 import Header from "./components/common/Header";
 import Footer from "./components/common/Footer";
 import SelectFile from "./components/userManual/SelectFile";
@@ -8,7 +12,7 @@ import GenaratedReport from "./components/userManual/GenaratedReport";
 import ModelExplainability from "./components/userManual/ModelExplainability";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
-class UserManual extends Component {
+class UserManual extends StreamlitComponentBase {
   theme = createTheme();
   render = () => {
     return (
@@ -29,4 +33,4 @@ class UserManual extends Component {
   };
 }
 
-export default UserManual;
+export default withStreamlitConnection(UserManual);
