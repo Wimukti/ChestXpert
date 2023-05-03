@@ -8,7 +8,7 @@ export default function Intro() {
                 <div>
                     <Grid container spacing={5}>
 
-                        <Grid item xs={12} md={7}>
+                        <Grid item xs={12} md={7}  display={'flex'} alignItems={'center'}>
                             <img style={{width: '100%'}} src='/home/Dataset.png'/>
                         </Grid>
                         <Grid item xs={12} md={5}>

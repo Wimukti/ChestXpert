@@ -30,7 +30,7 @@ export default function Intro() {
                                 provide faster, more accurate diagnoses.
                             </div>
                         </Grid>
-                        <Grid item xs={12} md={5}>
+                        <Grid item xs={12} md={5} display={'flex'} alignItems={'center'}>
                             <img style={{width: '100%'}} src='/home/Model 1.png'/>
                         </Grid>
                     </Grid>

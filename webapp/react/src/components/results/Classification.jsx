@@ -8,7 +8,7 @@ export default function Intro() {
                 <div>
                     <Grid container spacing={5}>
                         
-                        <Grid item xs={12} md={7} style={{display:'flex', alignItems:'center', justifyContent:'center'}}>
+                        <Grid item xs={12} md={7}  display={'flex'} alignItems={'center'} justifyContent={'center'}>
                             <img style={{width: '70%'}} src='/results/Blank 4 Grids Collage.png'/>
                         </Grid>
                         <Grid item xs={12} md={5}>
