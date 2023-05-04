@@ -18,7 +18,7 @@ import PdfComponent from "./components/pdf/PdfComponent";
 import * as React from 'react';
 import Switch from '@mui/material/Switch';
 import Typography from "@mui/material/Typography";
-import {Divider} from "@mui/material";
+import {alpha, Divider} from "@mui/material";
 
 class AttentionMap extends StreamlitComponentBase {
     state = {
@@ -39,6 +39,7 @@ class AttentionMap extends StreamlitComponentBase {
         let jet_maps = this.props.args["jet_maps"];
         let binary_maps = this.props.args["binary_maps"];
         let resized_img = this.props.args["resized_img"];
+        let report = this.props.args["report"];
         this.setState({resizedImg: resized_img, report:this.props.args["report"]})
 
         if (att_maps) {
@@ -65,7 +66,7 @@ class AttentionMap extends StreamlitComponentBase {
         if (true) {
             return <div style={{paddingTop: 20,}}>
 
-                <ButtonGroup style={{marginBottom: 15, paddingLeft: '10%', paddingRight: '10%'}}>
+                <ButtonGroup color="error" style={{marginBottom: 15, paddingLeft: '10%', paddingRight: '10%'}}>
                     <Button variant={this.state.selectedMap === 'attention' ? "contained" : "outlined"}
                             onClick={() => this.setState({
                                 displayedMap: this.state.att_maps,
@@ -143,14 +144,22 @@ class AttentionMap extends StreamlitComponentBase {
                     </Swiper>
                 </div>
                 <div style={{marginBottom: 15, paddingLeft: '10%', paddingRight: '10%'}}>
-                    <Switch checked={!this.state.showResizedImg}
+                    <Switch
+                            sx={{
+                                  '& .MuiSwitch-switchBase.Mui-checked': {
+                                    color: '#c52a25',
+                                  },
+                                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                    backgroundColor: '#c52a25',
+                                  },
+                            }}
+                            checked={!this.state.showResizedImg}
                             onChange={() => this.setState({showResizedImg: !this.state.showResizedImg})}/>
                     Show explainability Map
                 </div>
                 <Divider sx={{margin: '30px auto', width: '80%'}}/>
                 <div style={{marginBottom: 15, paddingLeft: '10%', paddingRight: '10%'}}>
-                    <Typography sx={{fontSize: 'calc(1.3rem + .6vw)', fontWeight: 600}}>Download Medical
-                        Report</Typography>
+                    <Typography sx={{fontSize: 'calc(1.3rem + .6vw)', fontWeight: 600}}>Download Chest X-Ray Report</Typography>
                 </div>
                 <div style={{paddingLeft: '10%', paddingRight: '10%'}}>
                     <PdfComponent

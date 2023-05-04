@@ -34,8 +34,8 @@ _attention_map = components.declare_component(
 def image_editor(upload_image):
     return _image_editor(upload_image=upload_image)
 
-def attention_map(binary_maps, jet_maps, attention_maps, resized_img):
-    return _attention_map(binary_maps=binary_maps, jet_maps=jet_maps, attention_maps=attention_maps, resized_img=resized_img)
+def attention_map(binary_maps, jet_maps, attention_maps, resized_img, report):
+    return _attention_map(binary_maps=binary_maps, jet_maps=jet_maps, attention_maps=attention_maps, resized_img=resized_img, report=report)
 
 def st_header(title, subtitle):
     return _header(title=title, subtitle=subtitle)
@@ -112,7 +112,7 @@ def app():
                                                      st.session_state.temperature, st.session_state.top_k, st.session_state.top_p,
                                                      st.session_state.options, st.session_state.seed)
                 predicted_sentence = st.session_state.tokenizer.decode(result)
-
+            st.session_state.predicted_sentence = predicted_sentence
             # Display generated text
             st.write('''<span style="
                                    margin-top: 30px;
@@ -224,7 +224,6 @@ def app():
                 jet_images[st.session_state.tokenizer.decode([result.numpy()[i]])] = plot_data_jet
                 binary_images[st.session_state.tokenizer.decode([result.numpy()[i]])] = plot_data_binary
 
-
             # convert the image to bytes
             bytes_data = uploaded_file.getvalue()
             # convert to base64
@@ -242,6 +241,6 @@ def app():
             binary_images = json.dumps(binary_images)
 
             # display attention maps using React component
-            attention_map(binary_images, jet_images, st.session_state.attention_maps, st.session_state.upload_image)
+            attention_map(binary_images, jet_images, st.session_state.attention_maps, st.session_state.upload_image, st.session_state.predicted_sentence)
     else:
         print("No upload image")

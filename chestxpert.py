@@ -59,11 +59,6 @@ def main():
                                    "nav-link-selected": {"background-color": "#c52a25"},
                                }
                            )
-    st.markdown("""
-                <style>
-                [data-testid="stSidebar"]{
-                }
-    """, unsafe_allow_html=True)
 
     if selected != "Configuration":
         st.markdown("""
@@ -134,7 +129,12 @@ def main():
                         [data-testid="stMarkdownContainer"] {
                                 font-size: 1.3rem!important;
                         }
-                        
+                        footer {
+                                display: none;
+                        }
+                        header {
+                                visibility: hidden !important;
+                        }
                     </style>
                     """, unsafe_allow_html=True)
 

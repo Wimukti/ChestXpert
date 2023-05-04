@@ -16,7 +16,7 @@ export default function AdvancedConfig() {
           </Grid>
           <Grid item xs={12} md={6}>
             <div className="section-p">
-              The software allows you to fine-tune the report generation with
+              ChestXpert allows you to fine-tune the report generation with
               advanced configuration. The following advanced configuration
               options are available:
             </div>
@@ -52,7 +52,7 @@ export default function AdvancedConfig() {
             </div>
           </Grid>
           <Grid item xs={12} md={6}>
-            <img style={{ width: "100%" }} src="/userManual/Step 05.gif" />
+            <img style={{ width: "100%" }} src="/userManual/Step 5.png" />
           </Grid>
         </Grid>
       </div>

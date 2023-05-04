@@ -26,7 +26,7 @@ export default function GenaratedReport() {
             </div>
           </Grid>
           <Grid item xs={12} md={6}>
-            <img style={{ width: "100%" }} src="/userManual/Step 03.gif" />
+            <img style={{ width: "100%" }} src="/userManual/Step 3.png" />
           </Grid>
         </Grid>
       </div>

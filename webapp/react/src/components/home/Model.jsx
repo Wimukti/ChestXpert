@@ -1,7 +1,23 @@
 import React from 'react'
 import Grid from '@mui/material/Grid';
+import {keyframes} from "@mui/system";
+import Box from "@mui/material/Box";
 
 export default function Intro() {
+    const fade = keyframes`
+        0% {
+            opacity: 1;
+        }
+        25% {
+            opacity: 1;
+        }
+        75% {
+            opacity: 0;
+        }
+        100% {
+            opacity: 0;
+        }
+    `;
     return (
         <div className='section-white'>
             <div className='section'>
@@ -31,7 +47,14 @@ export default function Intro() {
                             </div>
                         </Grid>
                         <Grid item xs={12} md={5} display={'flex'} alignItems={'center'}>
-                            <img style={{width: '100%'}} src='/home/Model 1.png'/>
+                            <Box sx={{width: '100%', position: "relative"}}>
+                                <Box component="img" sx={{ width: '100%', position: "absolute"}}
+                                    src='/home/Model 1.png'/>
+                                <Box component="img" sx={{
+                                    width: '100%',
+                                    animation: `${fade} 2s ease-in-out infinite alternate`}}
+                                     src='/home/Model 2.png'/>
+                            </Box>
                         </Grid>
                     </Grid>
                 </div>
