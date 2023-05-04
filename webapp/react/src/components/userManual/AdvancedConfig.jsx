@@ -3,7 +3,8 @@ import Grid from "@mui/material/Grid";
 
 export default function AdvancedConfig() {
   return (
-    <div className="section">
+    <div className="section-white">
+<div className="section">
       <div>
         <Grid container spacing={1}>
           <Grid item xs={3} md={1}>
@@ -57,5 +58,8 @@ export default function AdvancedConfig() {
         </Grid>
       </div>
     </div>
+    </div>
+
+    
   );
 }

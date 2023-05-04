@@ -3,7 +3,7 @@ import Grid from "@mui/material/Grid";
 
 export default function EditImage() {
   return (
-    <div style={{ background: "#f5f5f5" }}>
+    <div className="section-brown">
       <div className="section section-brown">
         <div>
           <Grid container spacing={2}>

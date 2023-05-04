@@ -3,6 +3,7 @@ import Grid from "@mui/material/Grid";
 
 export default function SelectFile() {
   return (
+    <div className="section-white">
     <div className="section">
       <div>
         <Grid container spacing={1}>
@@ -33,6 +34,6 @@ export default function SelectFile() {
           </Grid>
         </Grid>
       </div>
-    </div>
+    </div></div>
   );
 }

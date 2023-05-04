@@ -3,6 +3,7 @@ import Grid from "@mui/material/Grid";
 
 export default function GenaratedReport() {
   return (
+    <div className="section-white">
     <div className="section">
       <div>
         <Grid container spacing={2}>
@@ -30,6 +31,6 @@ export default function GenaratedReport() {
           </Grid>
         </Grid>
       </div>
-    </div>
+    </div></div>
   );
 }
