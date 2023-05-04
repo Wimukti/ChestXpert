@@ -22,6 +22,7 @@ class PdfComponent extends React.Component {
             age: 0,
             sex:'Male',
         },
+        agreePrivacyPolicy:false,
         open: false,
     }
     handleOpen = () => {
@@ -45,6 +46,7 @@ class PdfComponent extends React.Component {
                      <TextField onChange={(event)=>this.setState({patientDetails:{...this.state.patientDetails,name:event.target.value}})} value={this.state.patientDetails.name} fullWidth id="name-input" label="Full Name" variant="outlined" style={{marginBottom:10}}/>
                      <TextField onChange={(event)=>this.setState({patientDetails:{...this.state.patientDetails,age:event.target.value}})} value={this.state.patientDetails.age} fullWidth id="age-input" label="Age" variant="outlined" type='number' style={{marginBottom:10}}/>
                      <Select
+                     style={{marginBottom:10}}
                      fullWidth
                         value={this.state.patientDetails.sex}
                         label="Sex"
@@ -53,11 +55,19 @@ class PdfComponent extends React.Component {
                         <MenuItem value={'Male'}>Male</MenuItem>
                         <MenuItem value={'Female'}>Female</MenuItem>
                     </Select>
+
+                    <div style={{display:'flex', alignItems:'center'}}>
+                        <Checkbox sx={{color: '#c52a25', '&.Mui-checked': {color: '#c52a25'}}} onChange={()=>this.setState({agreePrivacyPolicy: !this.state.agreePrivacyPolicy})}  checked={this.state.agreePrivacyPolicy}/>
+                        <span>
+                            I agree to <span style={{cursor:'pointer', color:'#c52a25'}} onClick={()=>this.setState({open:true})}> Privacy Policy </span> 
+                        </span> 
+                    </div>
                 </Box>
                 }
                 <ReactToPrint
                     content={() => this.componentRef}
                     trigger={() => <Button
+                        disabled={this.state.showUserDetailsForm?!this.state.agreePrivacyPolicy:false}
                         sx={{
                             backgroundColor: '#c52a25',
                             '&:hover': {
@@ -68,7 +78,7 @@ class PdfComponent extends React.Component {
                         Download Report</Button>}
                 />
                 <div>
-                  <Button onClick={this.handleOpen}>Policy</Button>
+                
                   <Dialog
                     open={this.state.open}
                     onClose={this.handleClose}
