@@ -6,4 +6,17 @@
 
 .content{
     margin: 10px 20px;
+	position: relative;
 }
+
+.content::before {
+	position: absolute;
+	content: "";
+	width: 100%; 
+	height: 100%;  
+	opacity: .2; 
+	z-index: -1;
+	background: url(/watermark.png) no-repeat;
+	background-size: 300px 300px;
+	background-position: center center;  
+  }
