@@ -46,11 +46,22 @@ def main():
         st.session_state['top_p'] = 1.
     if 'attention_head' not in st.session_state:
         st.session_state['attention_head'] = -1
+    if 'home_return' not in st.session_state:
+        st.session_state['home_return'] = None
+    if 'home_clicked' not in st.session_state:
+        st.session_state['home_clicked'] = False
 
+    default_index = 0
+    if st.session_state.home_return == "ChestXpert":
+        default_index = 4
+    elif st.session_state.home_return == "User Manual":
+        default_index = 3
+
+    # Sidebar
     with st.sidebar:
         selected = option_menu('Main Menu',
                                ["Home", 'Results', 'Usability', 'User Manual', 'ChestXpert', 'Configuration', 'Contact Us'],
-                               icons=['house', 'bar-chart', 'people', 'map', 'file-earmark-medical', 'gear', 'telephone'], menu_icon="cast", default_index=0,
+                               icons=['house', 'bar-chart', 'people', 'map', 'file-earmark-medical', 'gear', 'telephone'], menu_icon="cast", default_index=default_index,
                                styles={
                                    "container": {"padding": "0!important", "background-color": "#c52a2500"},
                                    "menu-title": {"font-family": ['Muli', 'Helvetica', 'Arial', 'sans-serif'], "font-size": "25px"},
@@ -59,6 +70,12 @@ def main():
                                    "nav-link-selected": {"background-color": "#c52a25"},
                                }
                            )
+
+    if st.session_state.home_clicked:
+        selected = st.session_state.home_return
+        st.session_state.home_clicked = False
+        st.session_state.home_return = None
+
 
     if selected != "Configuration":
         st.markdown("""
@@ -138,7 +155,15 @@ def main():
                     </style>
                     """, unsafe_allow_html=True)
 
-    page_names_to_funcs[selected]()
+    if selected == "Home":
+        home_return = page_names_to_funcs[selected]()
+        if home_return:
+            print("Inside If")
+            st.session_state.home_return = home_return
+            st.session_state.home_clicked = True
+            st.experimental_rerun()
+    else:
+        page_names_to_funcs[selected]()
 
 # Main function call
 if __name__ == '__main__':

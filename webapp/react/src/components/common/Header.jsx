@@ -17,7 +17,7 @@ function Header({title, subtitle, showActionButton=false, navigate=undefined}) {
                                 },
                                 }} 
                         variant='contained' style={{marginRight:10}}
-                        onClick={()=>navigate('chestxpert')}
+                        onClick={()=>navigate('ChestXpert')}
                         >Start ChestXpert</Button>
                         <Button sx={{
                             backgroundColor: '#c52a25',
@@ -25,7 +25,7 @@ function Header({title, subtitle, showActionButton=false, navigate=undefined}) {
                               backgroundColor: '#7a100c',
                           },
                         }} variant='contained'
-                        onClick={()=>navigate('user-manual')}
+                        onClick={()=>navigate('User Manual')}
                         >User Manual</Button>
                         </div>)}
                 </div>
