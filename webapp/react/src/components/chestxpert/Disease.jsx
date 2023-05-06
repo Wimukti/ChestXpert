@@ -15,7 +15,7 @@ const MenuProps = {
   };
 
   
-export default function Disease({accuracy,disease}) {
+export default function Disease({accuracy,disease,gradcam}) {
 
 const [approval, setApproval] = React.useState(-1);
 
@@ -62,7 +62,7 @@ const [approval, setApproval] = React.useState(-1);
                 
             </Grid>
             <Grid item xs={12} md={6}  display={'flex'} alignItems={'center'} justifyContent={'center'}>
-                <img style={{width: '60%'}} src='/home/ChestXray-cam.png'/>
+                <img style={{width: '60%'}} src={`data:image/jpeg;base64,${gradcam}`} alt='gradcam'/>
             </Grid>
         </Grid>
     </div>

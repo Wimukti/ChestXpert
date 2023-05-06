@@ -31,7 +31,8 @@ class AttentionMap extends StreamlitComponentBase {
         resizedImg: '',
         showResizedImg: false,
         selectedMap: 'attention',
-        report:''
+        report:'',
+        gradcam:''
     }
 
     componentDidMount() {
@@ -42,7 +43,7 @@ class AttentionMap extends StreamlitComponentBase {
         let binary_maps = this.props.args["binary_maps"];
         let resized_img = this.props.args["resized_img"];
         let report = this.props.args["report"];
-        this.setState({resizedImg: resized_img, report:this.props.args["report"]})
+        this.setState({resizedImg: resized_img, report:this.props.args["report"],gradcam:this.props.args["gradcam"]})
 
         if (att_maps) {
             const maps = JSON.parse(att_maps)
@@ -68,7 +69,7 @@ class AttentionMap extends StreamlitComponentBase {
         if (true) {
             return <div style={{paddingTop: 20,}}>
                     <Divider sx={{margin: '30px auto', width: '80%'}}/>
-                <Disease accuracy={58} disease={'Sahan'}/>
+                <Disease gradcam={this.state.gradcam} accuracy={58} disease={'Sahan'}/>
                     <Divider sx={{margin: '30px auto', width: '80%'}}/>
                 <Report report={this.state.report}/>
                     <Divider sx={{margin: '30px auto', width: '80%'}}/>
