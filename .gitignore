@@ -1,5 +1,6 @@
 .idea
 webapp/react/node_modules
+webapp/react/.firebase
 weights
 model/decoder/__pycache__
 webapp/streamlit/__pycache__

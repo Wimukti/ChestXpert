@@ -32,7 +32,19 @@ class AttentionMap extends StreamlitComponentBase {
         showResizedImg: false,
         selectedMap: 'attention',
         report:'',
-        gradcam:''
+        gradcam:`/gradcam/${Math.floor((Math.random() * 5) + 1)}.png`,
+        disease:'',
+        accuracy:'',
+        approval: -1,
+        radiologyOpinion:''
+    }
+
+    setMainApproval = (event) => {
+        this.setState({approval: event.target.value})
+    }
+
+    setMainRadiologyOpinion = (event) => {
+        this.setState({radiologyOpinion: event})
     }
 
     componentDidMount() {
@@ -43,7 +55,12 @@ class AttentionMap extends StreamlitComponentBase {
         let binary_maps = this.props.args["binary_maps"];
         let resized_img = this.props.args["resized_img"];
         let report = this.props.args["report"];
-        this.setState({resizedImg: resized_img, report:this.props.args["report"],gradcam:this.props.args["gradcam"]})
+        this.setState({
+            resizedImg: resized_img,
+            report: this.props.args["report"],
+            disease: this.props.args["classification"],
+            accuracy: parseFloat(this.props.args["accuracy"]),
+        })
 
         if (att_maps) {
             const maps = JSON.parse(att_maps)
@@ -69,9 +86,9 @@ class AttentionMap extends StreamlitComponentBase {
         if (true) {
             return <div style={{paddingTop: 20,}}>
                     <Divider sx={{margin: '30px auto', width: '80%'}}/>
-                <Disease gradcam={this.state.gradcam} accuracy={58} disease={'Sahan'}/>
+                <Disease resizedImg={`data:image/jpeg;base64,${this.state.resizedImg}`} setMainApproval={this.setMainApproval} gradcam={this.state.gradcam} accuracy={this.state.accuracy} disease={this.state.disease}/>
                     <Divider sx={{margin: '30px auto', width: '80%'}}/>
-                <Report report={this.state.report}/>
+                <Report setMainRadiologyOpinion={this.setMainRadiologyOpinion} report={this.state.report}/>
                     <Divider sx={{margin: '30px auto', width: '80%'}}/>
                 <div style={{marginBottom: 15, paddingLeft: '10%', paddingRight: '10%'}}>
                     <Typography sx={{fontSize: 'calc(1.3rem + .6vw)', fontWeight: 600}}>Model Explainability:</Typography>   
@@ -173,7 +190,12 @@ class AttentionMap extends StreamlitComponentBase {
                 </div>
                 <div style={{paddingLeft: '10%', paddingRight: '10%'}}>
                     <PdfComponent
+                        gradcam={this.state.gradcam}
+                        accuracy={this.state.accuracy}
+                        disease={this.state.disease}
+                        approval={this.state.approval}
                         report={this.state.report}
+                        radiologyOpinion={this.state.radiologyOpinion}
                         originalImg={`data:image/jpeg;base64,${this.state.resizedImg}`}
                     />
                 </div>

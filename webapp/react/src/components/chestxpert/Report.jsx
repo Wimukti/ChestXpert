@@ -4,9 +4,20 @@ import Grid from '@mui/material/Grid';
 import Checkbox from '@mui/material/Checkbox';
 import { Button } from '@mui/material';
 
-export default function Report({report}) {
+export default function Report({report, setMainRadiologyOpinion}) {
   const [addOpinion, setAddOpinion] = useState(false)
   const [radiologyOpinion, setRadiologyOpinion] = useState('')
+
+    const handleChange = (e) => {
+      setRadiologyOpinion(e.target.value);
+      setMainRadiologyOpinion(e.target.value)
+  };
+
+  const handleAddOpinion = () => {
+      setRadiologyOpinion('');
+      setMainRadiologyOpinion('')
+      setAddOpinion(!addOpinion)
+  };
 
   return (
     <div style={{marginBottom: 15, paddingLeft: '10%', paddingRight: '10%'}}>
@@ -22,11 +33,14 @@ export default function Report({report}) {
             <div style={{fontWeight:'bold', marginTop: 20, padding: '0px 20px', }}>
                 <div style={{fontWeight:'bold', marginTop: 20, display:'flex', alignItems:'center'}}>
                  Radiologist Opinion:
-                    <Checkbox sx={{color: '#c52a25', '&.Mui-checked': {color: '#c52a25'}}} onChange={()=>setAddOpinion(!addOpinion)}  checked={addOpinion}/>
+                    <Checkbox sx={{color: '#c52a25', '&.Mui-checked': {color: '#c52a25'}}} onChange={handleAddOpinion}  checked={addOpinion}/>
                 </div>
                 {addOpinion &&
                 <div style={{ padding: '0px 20px', marginTop: 10}}>
-                    <Button disabled={report===radiologyOpinion} onClick={()=>setRadiologyOpinion(report)} size='small'  
+                    <Button disabled={report===radiologyOpinion} onClick={()=> {
+                        setRadiologyOpinion(report);
+                        setMainRadiologyOpinion(report)
+                    }} size='small'
                     sx={{
                         marginBottom:'10px',
                             backgroundColor: '#c52a25',
@@ -34,7 +48,7 @@ export default function Report({report}) {
                               backgroundColor: '#7a100c',
                           },
                         }} variant="contained" >Copy generated report</Button>
-                    <textarea value={radiologyOpinion} onChange={(e)=>setRadiologyOpinion(e.target.value)} style={{width:'100%', padding:10}} rows={8} placeholder='Radiologist Opinion'></textarea>
+                    <textarea value={radiologyOpinion} onChange={(e)=>handleChange(e)} style={{width:'100%', padding:10}} rows={8} placeholder='Radiologist Opinion'></textarea>
                 </div>
                 }
                 

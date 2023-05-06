@@ -13,7 +13,7 @@ def load_validator():
 
 @st.cache_resource
 def load_encoder():
-    encoder_model = tf.keras.models.load_model('/Users/wimukthiindeewara/Desktop/dev/ChestXpert/weights/encoder.hdf5')
+    encoder_model = tf.keras.models.load_model('weights/encoder.hdf5')
     print('Encoder Model Loaded!')
     return encoder_model
 
