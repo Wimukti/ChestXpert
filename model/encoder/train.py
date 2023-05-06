@@ -9,7 +9,7 @@ checkpoint = tf.keras.callbacks.ModelCheckpoint(
     monitor='val_loss', verbose=1)
 
 model = tf.keras.Sequential([
- e,
+    tf.keras.applications.ResNet101(include_top=False, weights=None, input_shape=(224, 224, 1)),
     tf.keras.layers.GlobalAveragePooling2D(),
     tf.keras.layers.Dense(1024, activation='relu'),
     tf.keras.layers.Dense(14, activation='sigmoid')
