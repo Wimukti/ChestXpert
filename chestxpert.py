@@ -1,7 +1,9 @@
 import streamlit as st
+import nltk
+from nltk.translate.bleu_score import sentence_bleu
 from streamlit_option_menu import option_menu
 from webapp.streamlit import utils
-from webapp.streamlit.app import app
+from webapp.streamlit.app import app, attention_map
 from webapp.streamlit.home import home_page
 from webapp.streamlit.results import results
 from webapp.streamlit.usability_study import usability_study
@@ -16,6 +18,19 @@ st.set_page_config(layout="wide",
                    initial_sidebar_state="collapsed")
 
 # Main function
+
+
+def calculate_bleu(reference_sentence, candidate_sentence):
+    # Tokenize the reference and candidate sentences
+    ref_tokens = nltk.word_tokenize(reference_sentence.lower())
+    cand_tokens = nltk.word_tokenize(candidate_sentence.lower())
+
+    # Calculate the BLEU score
+    # weights = (0.25, 0.25, 0.25, 0.25) # Weights for unigrams, bigrams, trigrams, and 4-grams
+    bleu_score = sentence_bleu([ref_tokens], cand_tokens)
+
+    return bleu_score
+
 def main():
     page_names_to_funcs = {
         "Home": home_page,
@@ -26,9 +41,16 @@ def main():
         "Configuration": config_page,
         "Contact Us": contact_page
     }
+
     # Load models
     transformer, tokenizer = utils.load_model()
     cxr_validator_model = utils.load_validator()
+
+    reports = attention_map(None, None, None, None, None)
+    if (type(reports) == list and len(reports) == 2) :
+        reference_sentence, candidate_sentence = reports[0], reports[1]
+        bleu_score = calculate_bleu(reference_sentence, candidate_sentence)
+        attention_map(None, None, None, None, bleu_score)
 
     st.session_state['tokenizer'] = tokenizer
     st.session_state['transformer'] = transformer

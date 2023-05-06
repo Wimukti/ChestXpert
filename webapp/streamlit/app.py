@@ -31,11 +31,13 @@ _attention_map = components.declare_component(
     url=config['baseUrl'] + "/attention-map"
 )
 
+
+
 def image_editor(upload_image):
     return _image_editor(upload_image=upload_image)
 
-def attention_map(binary_maps, jet_maps, attention_maps, resized_img, report):
-    return _attention_map(binary_maps=binary_maps, jet_maps=jet_maps, attention_maps=attention_maps, resized_img=resized_img, report=report)
+def attention_map(binary_maps, jet_maps, attention_maps, resized_img, report, bleu_score):
+    return _attention_map(binary_maps=binary_maps, jet_maps=jet_maps, attention_maps=attention_maps, resized_img=resized_img, report=report, bleu_score=bleu_score)
 
 def st_header(title, subtitle):
     return _header(title=title, subtitle=subtitle)

@@ -10,15 +10,15 @@ function Header({title, subtitle, showActionButton=false, navigate=undefined}) {
                     <div className='page-title'>{title}</div>
                     <div className='page-sub-title'>{subtitle}</div>
                     {showActionButton && (<div style={{paddingTop:10}}>
-                        {/* <Button sx={{
+                        { <Button sx={{
                                     backgroundColor: '#c52a25',
                                     '&:hover': {
                                     backgroundColor: '#7a100c',
                                 },
-                                }} 
+                                }}
                         variant='contained' style={{marginRight:10}}
-                        onClick={()=>navigate('ChestXpert')}
-                        >Start ChestXpert</Button> */}
+                        onClick={()=>navigate(["hello how","Hellow good"])}
+                        >Start ChestXpert</Button> }
                         <Button sx={{
                             backgroundColor: '#c52a25',
                             '&:hover': {
