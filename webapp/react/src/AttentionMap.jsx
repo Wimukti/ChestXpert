@@ -20,6 +20,8 @@ import Switch from '@mui/material/Switch';
 import Typography from "@mui/material/Typography";
 import {alpha, Divider} from "@mui/material";
 
+import Report from './components/chestxpert/Report'
+import Disease from './components/chestxpert/Disease'
 class AttentionMap extends StreamlitComponentBase {
     state = {
         att_maps: [],
@@ -65,7 +67,14 @@ class AttentionMap extends StreamlitComponentBase {
 
         if (true) {
             return <div style={{paddingTop: 20,}}>
-
+                    <Divider sx={{margin: '30px auto', width: '80%'}}/>
+                <Disease accuracy={58} disease={'Sahan'}/>
+                    <Divider sx={{margin: '30px auto', width: '80%'}}/>
+                <Report report={this.state.report}/>
+                    <Divider sx={{margin: '30px auto', width: '80%'}}/>
+                <div style={{marginBottom: 15, paddingLeft: '10%', paddingRight: '10%'}}>
+                    <Typography sx={{fontSize: 'calc(1.3rem + .6vw)', fontWeight: 600}}>Model Explainability:</Typography>   
+                </div>
                 <ButtonGroup color="error" style={{marginBottom: 15, paddingLeft: '10%', paddingRight: '10%'}}>
                     <Button variant={this.state.selectedMap === 'attention' ? "contained" : "outlined"}
                             onClick={() => this.setState({
