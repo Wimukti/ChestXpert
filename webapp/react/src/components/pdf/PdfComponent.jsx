@@ -15,6 +15,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import {collection, addDoc} from "firebase/firestore";
 import {db} from '../../../src/firebase.js';
+import Alert from '@mui/material/Alert';
 
 
 class PdfComponent extends React.Component {
@@ -28,6 +29,7 @@ class PdfComponent extends React.Component {
         agreePrivacyPolicy: false,
         open: false,
         sendFirebaseData: false,
+        showAlert: false
     }
     handleOpen = () => {
         this.setState({open: true})
@@ -42,9 +44,13 @@ class PdfComponent extends React.Component {
             try {
                 const docRef = await addDoc(collection(db, "cxr-reports"), {
                     report: this.props.radiologyOpinion,
-                    image: this.props.originalImg
+                    image: this.props.originalImg.slice(0,200)
                 });
                 console.log("Document written with ID: ", docRef.id);
+                this.setState({showAlert: true})
+                setTimeout(() => {
+                    this.setState({showAlert: false})
+                }, 2000)
             } catch (e) {
                 console.error("Error adding document: ", e);
             }
@@ -118,7 +124,7 @@ class PdfComponent extends React.Component {
                                   onChange={() => this.setState({sendFirebaseData: !this.state.sendFirebaseData})}
                                   checked={this.state.sendFirebaseData}/>
                         <span>
-                        I agree to fdaf dsafdsa
+                        I agree to furnish the manually written medical report and Chest X-Ray to enhance the performance of the framework.
                     </span>
                     </div>
                 }
@@ -259,6 +265,7 @@ class PdfComponent extends React.Component {
                 <DataComponent patientDetails={this.state.patientDetails}
                                showUserDetails={this.state.showUserDetailsForm} {...this.props}
                                ref={(response) => (this.componentRef = response)}/>
+                {this.state.showAlert && <Alert severity='success' sx={{marginTop: '20px'}}>Thank You! You Medical Report is successfully Saved!</Alert>}
             </div>
         );
     }
