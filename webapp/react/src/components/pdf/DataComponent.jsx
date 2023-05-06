@@ -4,7 +4,7 @@ import Header from '../common/Header';
 import Footer from '../common/Footer';
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
-import { Divider} from "@mui/material";
+import {Divider} from "@mui/material";
 
 class DataComponent extends React.Component {
     render() {
@@ -20,27 +20,30 @@ class DataComponent extends React.Component {
 
                     {
                         this.props.showUserDetails &&
-                        <div>
-
-                            <Typography sx={{fontSize: 'calc(1.3rem + .6vw)', fontWeight: 600}}>
-                                Patient Details:
-                            </Typography>
+                        <>
                             <div>
+
+                                <Typography sx={{fontSize: 'calc(1.3rem + .6vw)', fontWeight: 600}}>
+                                    Patient Details:
+                                </Typography>
                                 <div>
-                                    Name: {this.props.patientDetails.name}
-                                </div>
-                                <div>
-                                    Age: {this.props.patientDetails.age} years old
-                                </div>
-                                <div>
-                                    Sex: {this.props.patientDetails.sex}
+                                    <div>
+                                        Name: {this.props.patientDetails.name}
+                                    </div>
+                                    <div>
+                                        Age: {this.props.patientDetails.age} years old
+                                    </div>
+                                    <div>
+                                        Sex: {this.props.patientDetails.sex}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                            <Divider sx={{margin: '15px auto', width: '100%'}}/>
+                        </>
                     }
-                     <Divider sx={{margin: '15px auto', width: '100%'}}/>
-                    <div >
-                        <Typography sx={{fontSize: 'calc(1.3rem + .6vw)', fontWeight: 600, marginBottom:'20px'}}>
+
+                    <div>
+                        <Typography sx={{fontSize: 'calc(1.3rem + .6vw)', fontWeight: 600, marginBottom: '20px'}}>
                             Original X-Ray:
                         </Typography>
 
@@ -55,7 +58,7 @@ class DataComponent extends React.Component {
 
                     <Divider sx={{margin: '15px auto', width: '100%'}}/>
 
-                    <div >
+                    <div>
 
                         <div>
                             <div style={{marginBottom: 15}}>
@@ -94,8 +97,43 @@ class DataComponent extends React.Component {
                                     </Grid>
                                     <Grid item xs={12} md={6} display={'flex'} alignItems={'center'}
                                           justifyContent={'center'}>
-                                        <img style={{width: '60%'}} src={this.props.gradcam}
-                                             alt='gradcam'/>
+                                        <div
+                                            style={{
+                                                height: 300,
+                                                width: 280,
+                                                overflow: 'hidden',
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                position: 'relative',
+                                            }}
+                                        >
+                                            <img
+                                                style={{
+                                                    height: 230,
+                                                    width: '75%',
+                                                    top: 36,
+                                                    position: 'absolute',
+                                                    objectFit: 'cover',
+
+                                                }}
+                                                alt="The house from the offer."
+                                                src={this.props.originalImg}
+                                            />
+                                            <img
+                                                style={{
+                                                    height: 230,
+                                                    width: '75%',
+                                                    objectFit: 'cover',
+                                                    objectPosition: '50% 50%',
+                                                    opacity: parseFloat(this.props.opacity),
+                                                    zIndex: 20
+
+                                                }}
+                                                alt="The house from the offer."
+                                                src={this.props.gradcam}
+                                            />
+                                        </div>
                                     </Grid>
                                 </Grid>
                             </div>
@@ -104,7 +142,7 @@ class DataComponent extends React.Component {
 
                     <Divider sx={{margin: '15px auto', width: '100%'}}/>
 
-                    <div >
+                    <div>
                         <Typography sx={{fontSize: 'calc(1.3rem + .6vw)', fontWeight: 600}}>
                             Report Generation:
                         </Typography>
@@ -117,17 +155,17 @@ class DataComponent extends React.Component {
                         <div style={{fontWeight: 'bold', marginTop: 20, padding: '0px 20px'}}>
                             Radiologist Opinion:
                         </div>
-                        <div style={{ marginTop: 10}}>
+                        <div style={{marginTop: 10}}>
                             <div style={{padding: '0px 40px', marginTop: 10}}>
-                            {this.props.radiologyOpinion?this.props.radiologyOpinion:'-'}
-                        </div>
+                                {this.props.radiologyOpinion ? this.props.radiologyOpinion : '-'}
+                            </div>
 
 
                         </div>
 
                     </div>
 
-                       <Divider sx={{margin: '15px auto', width: '100%'}}/>
+                    <Divider sx={{margin: '15px auto', width: '100%'}}/>
 
                     <div style={{marginBottom: 10, fontStyle: 'italic'}}>
                         It should be noted that the chestXpert team cannot be held responsible for any errors or

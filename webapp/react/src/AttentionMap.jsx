@@ -22,8 +22,10 @@ import {alpha, Divider} from "@mui/material";
 
 import Report from './components/chestxpert/Report'
 import Disease from './components/chestxpert/Disease'
+
 class AttentionMap extends StreamlitComponentBase {
     state = {
+        opacity:0.5,
         att_maps: [],
         jet_maps: [],
         binary_maps: [],
@@ -41,6 +43,10 @@ class AttentionMap extends StreamlitComponentBase {
 
     setMainApproval = (event) => {
         this.setState({approval: event.target.value})
+    }
+
+    setOpacity = (event) => {
+        this.setState({opacity: event})
     }
 
     setMainRadiologyOpinion = (event) => {
@@ -86,7 +92,7 @@ class AttentionMap extends StreamlitComponentBase {
         if (true) {
             return <div style={{paddingTop: 20,}}>
                     <Divider sx={{margin: '30px auto', width: '80%'}}/>
-                <Disease resizedImg={`data:image/jpeg;base64,${this.state.resizedImg}`} setMainApproval={this.setMainApproval} gradcam={this.state.gradcam} accuracy={this.state.accuracy} disease={this.state.disease}/>
+                <Disease opacity={this.state.opacity} setOpacity={this.setOpacity} resizedImg={`data:image/jpeg;base64,${this.state.resizedImg}`} setMainApproval={this.setMainApproval} gradcam={this.state.gradcam} accuracy={this.state.accuracy} disease={this.state.disease}/>
                     <Divider sx={{margin: '30px auto', width: '80%'}}/>
                 <Report setMainRadiologyOpinion={this.setMainRadiologyOpinion} report={this.state.report}/>
                     <Divider sx={{margin: '30px auto', width: '80%'}}/>
@@ -197,6 +203,7 @@ class AttentionMap extends StreamlitComponentBase {
                         report={this.state.report}
                         radiologyOpinion={this.state.radiologyOpinion}
                         originalImg={`data:image/jpeg;base64,${this.state.resizedImg}`}
+                        opacity={this.state.opacity}
                     />
                 </div>
                 {/*    Vertical Space*/}

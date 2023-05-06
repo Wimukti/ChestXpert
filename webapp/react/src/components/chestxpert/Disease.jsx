@@ -16,10 +16,9 @@ const MenuProps = {
 };
 
 
-export default function Disease({accuracy, disease, gradcam, setMainApproval, resizedImg}) {
+export default function Disease({opacity,setOpacity,accuracy, disease, gradcam, setMainApproval, resizedImg}) {
 
     const [approval, setApproval] = React.useState(-1);
-    const [opacity, setOpacity] = React.useState(0.5);
 
     const handleChange = (event) => {
         setMainApproval(event);
