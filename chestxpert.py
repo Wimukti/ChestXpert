@@ -29,10 +29,12 @@ def main():
     # Load models
     transformer, tokenizer = utils.load_model()
     cxr_validator_model = utils.load_validator()
+    encoder_model = utils.load_encoder()
 
     st.session_state['tokenizer'] = tokenizer
     st.session_state['transformer'] = transformer
     st.session_state['cxr_validator_model'] = cxr_validator_model
+    st.session_state['encoder_model'] = encoder_model
 
     if 'options' not in st.session_state:
         st.session_state['options'] = 'Sampling'

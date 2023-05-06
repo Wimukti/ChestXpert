@@ -10,6 +10,7 @@ import webapp.streamlit.utils as utils
 import streamlit.components.v1 as components
 import cv2
 import matplotlib.cm as cm
+import model.encoder.evaluate as evaluate
 
 # Read config file
 with open('config.json') as config_file:
@@ -36,12 +37,19 @@ def image_editor(upload_image):
     return _image_editor(upload_image=upload_image)
 
 
-def attention_map(binary_maps, jet_maps, attention_maps, resized_img, report):
-    return _attention_map(binary_maps=binary_maps, jet_maps=jet_maps, attention_maps=attention_maps, resized_img=resized_img, report=report)
+def attention_map(binary_maps, jet_maps, attention_maps, resized_img, report, classification, accuracy):
+    return _attention_map(binary_maps=binary_maps,
+                          jet_maps=jet_maps,
+                          attention_maps=attention_maps,
+                          resized_img=resized_img,
+                          report=report,
+                          classification=classification,
+                          accuracy=accuracy)
 
 
 def st_header(title, subtitle):
     return _header(title=title, subtitle=subtitle)
+
 
 
 # Define a state to hold the objects
@@ -84,8 +92,6 @@ def app():
 
         if image_data is not None:
 
-            print('image_data', image_data)
-
             # save edited_image in the session state
             st.session_state.edited_image = image_data
 
@@ -104,6 +110,9 @@ def app():
             img_array = tf.image.resize_with_pad(
                 img_array, 224, 224, method=tf.image.ResizeMethod.BILINEAR)
 
+            classification, accuracy = evaluate.classification_results(img_array)
+            print("Predicted Class: ", classification)
+            print("Accuracy: ", accuracy, "%")
             # Check image
             valid = tf.nn.sigmoid(
                 st.session_state.cxr_validator_model(img_array))
@@ -245,6 +254,6 @@ def app():
 
             # display attention maps using React component
             attention_map(binary_images, jet_images, st.session_state.attention_maps,
-                          st.session_state.upload_image, st.session_state.predicted_sentence)
+                          st.session_state.upload_image, st.session_state.predicted_sentence, classification, accuracy)
     else:
         print("No upload image")
