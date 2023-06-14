@@ -14,12 +14,12 @@ import LinearProgress from '@mui/material/LinearProgress';
 import * as React from 'react';
 import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
-import { alpha, Divider } from '@mui/material';
+import { Divider } from '@mui/material';
 
 import Report from '../components/chestxpert/Report';
 import FileUploader from '../components/chestxpert/FileUploader';
 import Disease from '../components/chestxpert/Disease';
-import response from '../response.json';
+//import response from '../response.json';
 import Layout from '../components/Layout.jsx';
 import Header from '../components/common/Header.jsx';
 import ImageEditor from '../components/chestxpert/ImageEditor.jsx';
@@ -67,7 +67,7 @@ class AttentionMap extends React.Component {
     this.setState({ loading: true, resizedImg: image, activeStep: 1 });
 
     try {
-      //const { data } = await axios.post('https://chestxpert.live/generate_report', { image });
+      const { data: response } = await axios.post('https://chestxpert.live/generate_report', { image });
 
       setTimeout(() => {
         let att_maps = response['attention_map'];
@@ -102,8 +102,10 @@ class AttentionMap extends React.Component {
         this.setState({ hasResponse: true });
       }, 5000);
     } catch (e) {
+      alert('Error !');
       this.setState({ loading: false });
       this.setState({ hasResponse: false });
+      throw e;
     }
   };
 

@@ -24,10 +24,13 @@ class ImageEditor extends React.Component {
     const canvas = this.editor.getImage();
     const data = canvas.toDataURL('image/jpeg');
 
-    this.setState({ showInputImage: false });
-    this.setState({ editedImage: data });
-    this.setState({ showEditedImage: true });
-    await this.props.handleSave(data);
+    this.setState({ showInputImage: false, editedImage: data, showEditedImage: true });
+
+    try {
+      await this.props.handleSave(data);
+    } catch (e) {
+      this.setState({ showInputImage: true, showEditedImage: false });
+    }
   };
 
   componentDidMount() {
