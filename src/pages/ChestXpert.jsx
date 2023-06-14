@@ -72,7 +72,7 @@ class ChestXPert extends React.Component {
       const formData = new FormData();
       formData.append('image', fileBlob);
 
-      const { data: response } = await axios.post('http://api.chestxpert.live/generate_report', formData);
+      const { data: response } = await axios.post('https://api.chestxpert.live/generate_report', formData);
 
       let att_maps = response['attention_map'];
       let jet_maps = response['jet_images'];
