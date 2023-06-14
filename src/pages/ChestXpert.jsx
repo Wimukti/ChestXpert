@@ -27,7 +27,7 @@ import axios from 'axios';
 import PdfComponent from '../components/pdf/PdfComponent.jsx';
 import CustomizedSteppers from '../components/chestxpert/Stepper';
 
-class AttentionMap extends React.Component {
+class ChestXPert extends React.Component {
   state = {
     originalImgFile: undefined,
     opacity: 0.5,
@@ -300,4 +300,4 @@ class AttentionMap extends React.Component {
   };
 }
 
-export default AttentionMap;
+export default ChestXPert;
