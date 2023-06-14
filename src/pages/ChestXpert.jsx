@@ -67,40 +67,43 @@ class ChestXPert extends React.Component {
     this.setState({ loading: true, resizedImg: image, activeStep: 1 });
 
     try {
-      const { data: response } = await axios.post('https://chestxpert.live/generate_report', { image });
+      const file = await fetch(image);
+      const fileBlob = await file.blob();
+      const formData = new FormData();
+      formData.append('image', fileBlob);
 
-      setTimeout(() => {
-        let att_maps = response['attention_map'];
-        let jet_maps = response['jet_images'];
-        let binary_maps = response['binary_images'];
+      const { data: response } = await axios.post('http://api.chestxpert.live/generate_report', formData);
 
-        this.setState({
-          activeStep: 2,
-          report: response['report'],
-          disease: response['prediction'],
-          accuracy: parseFloat(response['accuracy']),
-        });
+      let att_maps = response['attention_map'];
+      let jet_maps = response['jet_images'];
+      let binary_maps = response['binary_images'];
 
-        if (att_maps) {
-          const maps = JSON.parse(att_maps);
-          const images = Object.keys(maps).map((key) => maps[key]);
-          this.setState({ att_maps: images, displayedMap: images });
-        }
+      this.setState({
+        activeStep: 2,
+        report: response['report'],
+        disease: response['prediction'],
+        accuracy: parseFloat(response['accuracy']),
+      });
 
-        if (jet_maps) {
-          const maps = JSON.parse(jet_maps);
-          const images = Object.keys(maps).map((key) => maps[key]);
-          this.setState({ jet_maps: images });
-        }
+      if (att_maps) {
+        const maps = JSON.parse(att_maps);
+        const images = Object.keys(maps).map((key) => maps[key]);
+        this.setState({ att_maps: images, displayedMap: images });
+      }
 
-        if (binary_maps) {
-          const maps = JSON.parse(binary_maps);
-          const images = Object.keys(maps).map((key) => maps[key]);
-          this.setState({ binary_maps: images });
-        }
-        this.setState({ loading: false });
-        this.setState({ hasResponse: true });
-      }, 5000);
+      if (jet_maps) {
+        const maps = JSON.parse(jet_maps);
+        const images = Object.keys(maps).map((key) => maps[key]);
+        this.setState({ jet_maps: images });
+      }
+
+      if (binary_maps) {
+        const maps = JSON.parse(binary_maps);
+        const images = Object.keys(maps).map((key) => maps[key]);
+        this.setState({ binary_maps: images });
+      }
+      this.setState({ loading: false });
+      this.setState({ hasResponse: true });
     } catch (e) {
       alert('Error !');
       this.setState({ loading: false });
