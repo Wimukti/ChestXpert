@@ -4,7 +4,7 @@ import Results from './pages/Results.jsx';
 import UsabilityStudy from './pages/UsabilityStudy.jsx';
 import UserManual from './pages/UserManual.jsx';
 import ContactUs from './pages/ContactUs.jsx';
-import ChestXPert from './pages/ChestXPert.jsx';
+import ChestXPert from './pages/ChestXPert';
 
 function App() {
   const router = createBrowserRouter([
