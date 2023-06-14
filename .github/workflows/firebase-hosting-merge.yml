@@ -15,12 +15,9 @@ jobs:
         with:
           node-version: '18'
       - run: npm install && npm run build
-      - uses: w9jds/firebase-action@v1.5.0
+      - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
-          args: deploy --only hosting
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_CXR_REPORT }}'
           channelId: live
           projectId: cxr-report
-        env:
-          FIREBASE_TOKEN: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_CXR_REPORT }}'
