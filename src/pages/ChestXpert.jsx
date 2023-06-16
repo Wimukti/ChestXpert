@@ -75,7 +75,9 @@ class ChestXPert extends React.Component {
       const storedConfig = localStorage.getItem('config');
       if (storedConfig) {
         const jsonConfig = JSON.parse(storedConfig);
-        formData.append('config', jsonConfig);
+        for (let key in jsonConfig) {
+          formData.append(key, jsonConfig[key]);
+        }
       }
       const { data: response } = await axios.post('https://api.chestxpert.live/generate_report', formData, {
         timeout: 120000,

@@ -7,8 +7,8 @@ import { useEffect, useState } from 'react';
 import Slider from '@mui/material/Slider';
 
 const configDeafult = {
-  generation_method: 'sampling',
-  sampling_seed: 42,
+  options: 'Sampling',
+  seed: 42,
   temperature: 1.0,
   top_k: 0,
   top_p: 1,
@@ -36,11 +36,11 @@ function Config(props) {
                 <div className="mt-5">
                   <Select
                     fullWidth
-                    value={config.generation_method}
-                    onChange={(e) => setConfig({ ...config, generation_method: e.target.value })}
+                    value={config.options}
+                    onChange={(e) => setConfig({ ...config, options: e.target.value })}
                   >
-                    <MenuItem value="sampling">Sampling</MenuItem>
-                    <MenuItem value="greedy">Greedy</MenuItem>
+                    <MenuItem value="Sampling">Sampling</MenuItem>
+                    <MenuItem value="Greedy">Greedy</MenuItem>
                   </Select>
                 </div>
               </div>
@@ -48,8 +48,8 @@ function Config(props) {
                 Sampling Seed:
                 <div className="mt-5">
                   <TextField
-                    value={config.sampling_seed}
-                    onChange={(e) => setConfig({ ...config, sampling_seed: e.target.value })}
+                    value={config.seed}
+                    onChange={(e) => setConfig({ ...config, seed: e.target.value })}
                     fullWidth
                     type="number"
                   />

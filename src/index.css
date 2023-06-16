@@ -42,8 +42,8 @@ body{
 
 .drawer-btn{
   position: fixed;
-  top: 0.5rem;
-  left: 0.25rem;
+  top: 1.29rem;
+  left: 1.3rem;
   z-index: 999990;
   transition: left 300ms ease 0s;
   cursor: pointer;
