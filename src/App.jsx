@@ -5,6 +5,7 @@ import UsabilityStudy from './pages/UsabilityStudy.jsx';
 import UserManual from './pages/UserManual.jsx';
 import ContactUs from './pages/ContactUs.jsx';
 import ChestXPert from './pages/ChestXPert';
+import Config from './pages/Config.jsx';
 
 function App() {
   const router = createBrowserRouter([
@@ -36,6 +37,10 @@ function App() {
     {
       path: '/contact-us',
       element: <ContactUs />,
+    },
+    {
+      path: '/configuration',
+      element: <Config />,
     },
     {
       path: '*',

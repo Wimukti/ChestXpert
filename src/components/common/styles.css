@@ -18,7 +18,7 @@
 }
 
 .container{
-    max-width: 1170px;
+    max-width: 1170px !important;
     margin: auto;
     padding: 0px 15px;
 }
@@ -31,4 +31,5 @@
     background: #3b3b3b;
     padding: 50px;
     text-align: center;
+    position: relative;
 }
