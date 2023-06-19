@@ -6,8 +6,8 @@ import React from 'react';
 
 class ImageEditor extends React.Component {
   state = {
-    width: 250,
-    height: 250,
+    width: 300,
+    height: 300,
     zoom: 1,
     image: null,
     showInputImage: true,
@@ -21,7 +21,7 @@ class ImageEditor extends React.Component {
 
   // add a method to the editor to preview the image
   handleSave = async () => {
-    const canvas = this.editor.getImage();
+    const canvas = this.editor.getImageScaledToCanvas();
     const data = canvas.toDataURL();
 
     this.setState({ showInputImage: false, editedImage: data, showEditedImage: true });
@@ -86,8 +86,7 @@ class ImageEditor extends React.Component {
                   Zoom&nbsp;&nbsp;
                 </Typography>
                 <Slider
-                  aria-label="Default"
-                  valueLabelDisplay="false"
+                  valueLabelDisplay="auto"
                   value={this.state.zoom}
                   onChange={(event, newValue) => {
                     this.setState({ zoom: newValue });
@@ -114,8 +113,7 @@ class ImageEditor extends React.Component {
                   Rotate{' '}
                 </Typography>
                 <Slider
-                  aria-label="Default"
-                  valueLabelDisplay="false"
+                  valueLabelDisplay="auto"
                   value={this.state.rotate}
                   onChange={(event, newValue) => {
                     this.setState({ rotate: newValue });
@@ -142,15 +140,13 @@ class ImageEditor extends React.Component {
                   Width&nbsp;
                 </Typography>
                 <Slider
-                  aria-label="Default"
-                  valueLabelDisplay="false"
+                  valueLabelDisplay="auto"
                   value={this.state.width}
                   onChange={(event, newValue) => {
                     this.setState({ width: newValue });
                   }}
                   min={250}
                   max={500}
-                  backgroundColor="#fc4c4c"
                   step={1}
                   defaultValue={250}
                   aria-labelledby="continuous-slider"
@@ -171,8 +167,7 @@ class ImageEditor extends React.Component {
                   Height
                 </Typography>
                 <Slider
-                  aria-label="Default"
-                  valueLabelDisplay="false"
+                  valueLabelDisplay="auto"
                   value={this.state.height}
                   onChange={(event, newValue) => {
                     this.setState({ height: newValue });

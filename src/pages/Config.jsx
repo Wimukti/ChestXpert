@@ -73,7 +73,7 @@ function Config(props) {
                 <div className="mt-5">
                   <Slider
                     track={false}
-                    aria-label="Default"
+                    valueLabelDisplay="auto"
                     value={config.top_k}
                     onChange={(event, newValue) => setConfig({ ...config, top_k: newValue })}
                     marks={[
@@ -90,7 +90,7 @@ function Config(props) {
                 <div className="mt-5">
                   <Slider
                     track={false}
-                    aria-label="Default"
+                    valueLabelDisplay="auto"
                     value={config.top_p}
                     onChange={(event, newValue) => setConfig({ ...config, top_p: newValue })}
                     marks={[
@@ -108,7 +108,7 @@ function Config(props) {
                 <div className="mt-5">
                   <Slider
                     track={false}
-                    aria-label="Default"
+                    valueLabelDisplay="auto"
                     value={config.attention_head}
                     onChange={(event, newValue) => setConfig({ ...config, attention_head: newValue })}
                     marks={[

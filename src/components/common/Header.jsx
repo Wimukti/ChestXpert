@@ -40,9 +40,12 @@ function Header({ title, subtitle, showActionButton = false, showTopHeader = tru
               <NavLink to="/chestxpert">
                 <Button
                   sx={{
-                    backgroundColor: '#c52a25',
+                    color: '#c52a25',
+                    fontWeight: 'bold',
+                    backgroundColor: 'white',
                     '&:hover': {
                       backgroundColor: '#7a100c',
+                      color: 'white',
                     },
                   }}
                   variant="contained"
@@ -68,9 +71,12 @@ function Header({ title, subtitle, showActionButton = false, showTopHeader = tru
               <div style={{ paddingTop: 10 }}>
                 <Button
                   sx={{
-                    backgroundColor: '#c52a25',
+                    color: '#c52a25',
+                    fontWeight: 'bold',
+                    backgroundColor: 'white',
                     '&:hover': {
                       backgroundColor: '#7a100c',
+                      color: 'white',
                     },
                   }}
                   variant="contained"
@@ -81,9 +87,12 @@ function Header({ title, subtitle, showActionButton = false, showTopHeader = tru
                 </Button>
                 <Button
                   sx={{
-                    backgroundColor: '#c52a25',
+                    color: '#c52a25',
+                    fontWeight: 'bold',
+                    backgroundColor: 'white',
                     '&:hover': {
                       backgroundColor: '#7a100c',
+                      color: 'white',
                     },
                   }}
                   variant="contained"

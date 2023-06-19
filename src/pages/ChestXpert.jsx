@@ -66,15 +66,15 @@ class ChestXPert extends React.Component {
   };
 
   componentDidMount() {
-    const socketInstance = io('https://api.chestxpert.live/', { maxHttpBufferSize: 50 * 1024 * 1024 });
+    const socketInstance = io('https://api.chestxpert.live/', { maxHttpBufferSize: 1024 * 1024 * 1024 });
 
     socketInstance.on('connect', () => {
       console.log('Connected to server');
       this.setState({ socket: socketInstance });
     });
 
-    socketInstance.on('disconnect', () => {
-      console.log('Disconnected from server');
+    socketInstance.on('disconnect', (reason) => {
+      console.log('Disconnected from server,', reason);
       this.setState({ loading: false, hasResponse: false, socket: null });
     });
 
