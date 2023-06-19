@@ -29,6 +29,15 @@ import CustomizedSteppers from '../components/chestxpert/Stepper';
 import io from 'socket.io-client';
 import Footer from '../components/common/Footer.jsx';
 
+const configDeafult = {
+  options: 'Sampling',
+  seed: 42,
+  temperature: 1.0,
+  top_k: 0,
+  top_p: 1,
+  attention_head: -1,
+};
+
 class ChestXPert extends React.Component {
   state = {
     originalImgFile: undefined,
@@ -115,19 +124,19 @@ class ChestXPert extends React.Component {
     this.setState({ disease: objectWithMaxProbability.class, accuracy: objectWithMaxProbability.probability });
 
     if (att_maps) {
-      const maps = JSON.parse(att_maps);
+      const maps = att_maps;
       const images = Object.keys(maps).map((key) => maps[key]);
       this.setState({ att_maps: images, displayedMap: images });
     }
 
     if (jet_maps) {
-      const maps = JSON.parse(jet_maps);
+      const maps = jet_maps;
       const images = Object.keys(maps).map((key) => maps[key]);
       this.setState({ jet_maps: images });
     }
 
     if (binary_maps) {
-      const maps = JSON.parse(binary_maps);
+      const maps = binary_maps;
       const images = Object.keys(maps).map((key) => maps[key]);
       this.setState({ binary_maps: images });
     }
@@ -138,15 +147,18 @@ class ChestXPert extends React.Component {
   handleSave = async (image) => {
     this.setState({ loading: true, resizedImg: image, activeStep: 1 });
 
+    let payload = { image: image.substring(image.indexOf(',') + 1) };
     try {
       const storedConfig = localStorage.getItem('config');
       if (storedConfig) {
         const jsonConfig = JSON.parse(storedConfig);
-        jsonConfig.image = image.substring(image.indexOf(',') + 1);
-        console.log(jsonConfig);
-        this.state.socket.emit('generate_report', jsonConfig);
-        console.log('Sent to socket');
+        payload = { ...payload, ...jsonConfig };
+      } else {
+        payload = { ...payload, ...configDeafult };
       }
+      console.log(payload);
+      this.state.socket.emit('generate_report', payload);
+      console.log('Sent to socket');
     } catch (e) {
       this.setState({ loading: false, hasResponse: false });
       alert(e.message || 'Error !');
