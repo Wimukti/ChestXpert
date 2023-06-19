@@ -30,7 +30,7 @@ import io from 'socket.io-client';
 import Footer from '../components/common/Footer.jsx';
 
 const configDeafult = {
-  options: 'Sampling',
+  options: 'Greedy',
   seed: 42,
   temperature: 1.0,
   top_k: 0,

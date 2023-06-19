@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import Slider from '@mui/material/Slider';
 
 const configDeafult = {
-  options: 'Sampling',
+  options: 'Greedy',
   seed: 42,
   temperature: 1.0,
   top_k: 0,
