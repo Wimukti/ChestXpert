@@ -22,7 +22,7 @@ class ImageEditor extends React.Component {
   // add a method to the editor to preview the image
   handleSave = async () => {
     const canvas = this.editor.getImage();
-    const data = canvas.toDataURL('image/jpeg');
+    const data = canvas.toDataURL();
 
     this.setState({ showInputImage: false, editedImage: data, showEditedImage: true });
 
@@ -87,7 +87,7 @@ class ImageEditor extends React.Component {
                 </Typography>
                 <Slider
                   aria-label="Default"
-                  valueLabelDisplay="auto"
+                  valueLabelDisplay="false"
                   value={this.state.zoom}
                   onChange={(event, newValue) => {
                     this.setState({ zoom: newValue });
@@ -200,25 +200,6 @@ class ImageEditor extends React.Component {
                 >
                   Done
                 </Button>
-              </div>
-            </Grid>
-          </Grid>
-        </div>
-      );
-    } else if (this.state.showEditedImage) {
-      return (
-        <div style={{ paddingLeft: '10%', paddingRight: '10%' }}>
-          <Grid container spacing={2}>
-            <Grid item xs={12} lg={12}>
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                }}
-              >
-                <img src={this.state.editedImage} alt="edited image" style={{ width: 300 }} />
-                <Typography marginTop={2}>Uploaded Image</Typography>
               </div>
             </Grid>
           </Grid>

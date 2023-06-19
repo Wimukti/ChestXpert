@@ -26,6 +26,8 @@ import ImageEditor from '../components/chestxpert/ImageEditor.jsx';
 import axios from 'axios';
 import PdfComponent from '../components/pdf/PdfComponent.jsx';
 import CustomizedSteppers from '../components/chestxpert/Stepper';
+import io from 'socket.io-client';
+import Footer from '../components/common/Footer.jsx';
 
 class ChestXPert extends React.Component {
   state = {
@@ -39,7 +41,7 @@ class ChestXPert extends React.Component {
     showResizedImg: false,
     selectedMap: 'attention',
     report: '',
-    gradcam: `/gradcam/${Math.floor(Math.random() * 5 + 1)}.png`,
+    gradcam: ``,
     disease: '',
     accuracy: '',
     approval: -1,
@@ -47,6 +49,8 @@ class ChestXPert extends React.Component {
     loading: false,
     hasResponse: false,
     activeStep: 0,
+    segmentedImage: '',
+    socket: null,
   };
 
   setMainApproval = (event) => {
@@ -61,61 +65,90 @@ class ChestXPert extends React.Component {
     this.setState({ radiologyOpinion: event });
   };
 
-  componentDidMount() {}
+  componentDidMount() {
+    const socketInstance = io('https://api.chestxpert.live/', { maxHttpBufferSize: 50 * 1024 * 1024 });
+
+    socketInstance.on('connect', () => {
+      console.log('Connected to server');
+      this.setState({ socket: socketInstance });
+    });
+
+    socketInstance.on('disconnect', () => {
+      console.log('Disconnected from server');
+      this.setState({ loading: false, hasResponse: false, socket: null });
+    });
+
+    // Custom event listener for server response
+    socketInstance.on('generated_report', (data) => {
+      console.log('Received server response:', data);
+      this.handleResponse(data);
+      // Process the server response
+    });
+  }
+  componentWillUnmount() {
+    if (this.state.socket) {
+      this.state.socket.disconnect();
+    }
+  }
+
+  handleResponse(response) {
+    let att_maps = response['attention_map'];
+    let jet_maps = response['jet_images'];
+    let binary_maps = response['binary_images'];
+
+    this.setState({
+      activeStep: 2,
+      report: response['report'],
+      disease: response['prediction'],
+      accuracy: parseFloat(response['accuracy']),
+      gradcam: `data:image/jpeg;base64,${response['gradcam']}`,
+      segmentedImage: `data:image/jpeg;base64,${response['segmented']}`,
+    });
+
+    const objectWithMaxProbability = response['classification'].reduce((maxObject, currentObject) => {
+      if (currentObject.probability > maxObject.probability) {
+        return currentObject;
+      }
+      return maxObject;
+    }, response['classification'][0]);
+
+    this.setState({ disease: objectWithMaxProbability.class, accuracy: objectWithMaxProbability.probability });
+
+    if (att_maps) {
+      const maps = JSON.parse(att_maps);
+      const images = Object.keys(maps).map((key) => maps[key]);
+      this.setState({ att_maps: images, displayedMap: images });
+    }
+
+    if (jet_maps) {
+      const maps = JSON.parse(jet_maps);
+      const images = Object.keys(maps).map((key) => maps[key]);
+      this.setState({ jet_maps: images });
+    }
+
+    if (binary_maps) {
+      const maps = JSON.parse(binary_maps);
+      const images = Object.keys(maps).map((key) => maps[key]);
+      this.setState({ binary_maps: images });
+    }
+
+    this.setState({ loading: false, hasResponse: true });
+  }
 
   handleSave = async (image) => {
     this.setState({ loading: true, resizedImg: image, activeStep: 1 });
 
     try {
-      const file = await fetch(image);
-      const fileBlob = await file.blob();
-      const formData = new FormData();
-      formData.append('image', fileBlob);
-
       const storedConfig = localStorage.getItem('config');
       if (storedConfig) {
         const jsonConfig = JSON.parse(storedConfig);
-        for (let key in jsonConfig) {
-          formData.append(key, jsonConfig[key]);
-        }
+        jsonConfig.image = image.substring(image.indexOf(',') + 1);
+        console.log(jsonConfig);
+        this.state.socket.emit('generate_report', jsonConfig);
+        console.log('Sent to socket');
       }
-      const { data: response } = await axios.post('https://api.chestxpert.live/generate_report', formData, {
-        timeout: 120000,
-      });
-
-      let att_maps = response['attention_map'];
-      let jet_maps = response['jet_images'];
-      let binary_maps = response['binary_images'];
-
-      this.setState({
-        activeStep: 2,
-        report: response['report'],
-        disease: response['prediction'],
-        accuracy: parseFloat(response['accuracy']),
-      });
-
-      if (att_maps) {
-        const maps = JSON.parse(att_maps);
-        const images = Object.keys(maps).map((key) => maps[key]);
-        this.setState({ att_maps: images, displayedMap: images });
-      }
-
-      if (jet_maps) {
-        const maps = JSON.parse(jet_maps);
-        const images = Object.keys(maps).map((key) => maps[key]);
-        this.setState({ jet_maps: images });
-      }
-
-      if (binary_maps) {
-        const maps = JSON.parse(binary_maps);
-        const images = Object.keys(maps).map((key) => maps[key]);
-        this.setState({ binary_maps: images });
-      }
-      this.setState({ loading: false });
-      this.setState({ hasResponse: true });
     } catch (e) {
-      this.setState({ loading: false });
-      this.setState({ hasResponse: false });
+      this.setState({ loading: false, hasResponse: false });
       alert(e.message || 'Error !');
       throw e;
     }
@@ -139,20 +172,31 @@ class ChestXPert extends React.Component {
             maxWidth: '1200px',
             background: 'white',
             padding: '40px 40px',
+            minHeight: '500px',
           }}
         >
           <div style={{ marginBottom: 40 }}>
             <CustomizedSteppers activeStep={this.state.activeStep} />
           </div>
 
-          {this.state.originalImgFile ? (
-            <ImageEditor handleSave={this.handleSave} upload_image={this.state.originalImgFile} />
+          {this.state.socket ? (
+            <>
+              {this.state.originalImgFile ? (
+                <ImageEditor handleSave={this.handleSave} upload_image={this.state.originalImgFile} />
+              ) : (
+                <FileUploader handleFileChange={this.handleFileChange} />
+              )}
+            </>
           ) : (
-            <FileUploader handleFileChange={this.handleFileChange} />
+            <div className="text-center mt-24 font-bold text-3xl">Connecting to server...</div>
           )}
 
           {this.state.loading && (
             <Box sx={{ width: '50%', margin: 'auto', marginTop: 5 }}>
+              <div className="flex justify-center mb-10">
+                <img style={{ width: 300 }} src="/loading-video.gif" />
+              </div>
+
               <LinearProgress />
               <Typography textAlign={'center'} marginTop={1} fontSize={20}>
                 Generating your x-ray report. Please wait...
@@ -161,6 +205,16 @@ class ChestXPert extends React.Component {
           )}
           {this.state.hasResponse && (
             <>
+              <div className="flex gap-20 justify-center">
+                <div className="text-center">
+                  <img src={this.state.resizedImg} alt="edited image" style={{ width: 200 }} />
+                  Uploaded Image
+                </div>
+                <div className="text-center">
+                  <img style={{ width: 200 }} src={this.state.segmentedImage} />
+                  Segmented Image
+                </div>
+              </div>
               <Divider sx={{ margin: '30px auto', width: '80%' }} />
               <Disease
                 opacity={this.state.opacity}
@@ -307,6 +361,7 @@ class ChestXPert extends React.Component {
             </>
           )}
         </div>
+        <Footer />
       </Layout>
     );
   };

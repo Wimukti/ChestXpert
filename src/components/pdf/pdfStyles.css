@@ -20,3 +20,9 @@
 	background-size: 800px 800px;
 	background-position: center center;  
   }
+
+@media print {
+	@page {
+		size: 210mm 400mm;
+	}
+}

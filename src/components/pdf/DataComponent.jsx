@@ -11,10 +11,7 @@ class DataComponent extends React.Component {
     return (
       <div className="pdfDownloader">
         <div style={{ marginBottom: 40 }}>
-          <Header
-            title="ChestXpert: PDF Report"
-            subtitle="Developed by Wimukthi Indeewara, Mahela Hennayake, Kasun Rathnayake"
-          />
+          <Header title="ChestXpert: PDF Report" subtitle="" showTopHeader={false} />
         </div>
 
         <div className="content">
@@ -144,7 +141,7 @@ class DataComponent extends React.Component {
             automated generated reports. Use of the system is entirely at the user's own risk.
           </div>
         </div>
-        <Footer />
+        <Footer showUniLogos={false} />
       </div>
     );
   }

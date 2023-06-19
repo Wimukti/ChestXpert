@@ -3,7 +3,6 @@ body{
   color: #333 !important;
   box-sizing: border-box;
   margin: 0px;
-
 }
 
 .section{
@@ -64,18 +63,22 @@ body{
   background: #262730;
   color: #FAFAFA;
 }
+
 .items-container{
   padding: 3rem 1rem 1.5rem;
 }
+
 #sidebar{
   display: flex;
   flex-direction: column;
   gap:10px;
 
 }
+
 #sidebar a svg{
   margin-right: 10px;
 }
+
 #sidebar a{
   display: flex;
   align-items: center;
@@ -87,6 +90,8 @@ body{
   font-weight: 900;
   color: #FAFAFA;
 }
+
 #sidebar a.active {
   background: rgb(197, 42, 37);
 }
+

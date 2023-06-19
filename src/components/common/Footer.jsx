@@ -1,12 +1,14 @@
 import './styles.css';
 
-function Footer() {
+function Footer({ showUniLogos = true }) {
   return (
     <div className="footer">
-      <div style={{ position: 'absolute', left: 40, display: 'flex', alignItems: 'center', gap: 20 }}>
-        <img style={{ width: 100 }} src="/uom-logo.png"></img>
-        <img style={{ width: 100 }} src="/cse-logo.png"></img>
-      </div>
+      {showUniLogos && (
+        <div style={{ position: 'absolute', left: 40, display: 'flex', alignItems: 'center', gap: 20 }}>
+          <img style={{ width: 100 }} src="/uom-logo.png"></img>
+          <img style={{ width: 100 }} src="/cse-logo.png"></img>
+        </div>
+      )}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
         <div>
           <img style={{ width: 250 }} src="/ChestXpert.png"></img>
