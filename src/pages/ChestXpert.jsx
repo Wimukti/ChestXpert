@@ -58,7 +58,6 @@ class ChestXPert extends React.Component {
     loading: false,
     hasResponse: false,
     activeStep: 0,
-    segmentedImage: '',
     socket: null,
   };
 
@@ -111,7 +110,6 @@ class ChestXPert extends React.Component {
       disease: response['prediction'],
       accuracy: parseFloat(response['accuracy']),
       gradcam: `data:image/jpeg;base64,${response['gradcam']}`,
-      segmentedImage: `data:image/jpeg;base64,${response['segmented']}`,
     });
 
     const objectWithMaxProbability = response['classification'].reduce((maxObject, currentObject) => {
@@ -221,10 +219,6 @@ class ChestXPert extends React.Component {
                 <div className="text-center">
                   <img src={this.state.resizedImg} alt="edited image" style={{ width: 200 }} />
                   Uploaded Image
-                </div>
-                <div className="text-center">
-                  <img style={{ width: 200 }} src={this.state.segmentedImage} />
-                  Segmented Image
                 </div>
               </div>
               <Divider sx={{ margin: '30px auto', width: '80%' }} />
