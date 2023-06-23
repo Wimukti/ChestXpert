@@ -1,45 +1,72 @@
-from flask import Flask, request, jsonify
-import json
+from PIL import Image
+from flask import jsonify
+from flask_cors import CORS, cross_origin
+from flask import Flask
+from flask_socketio import SocketIO, emit
 import base64
+from io import BytesIO
+from flask import Flask, request, jsonify
+from skimage import io as skio
 import tqdm
 import datetime
-from skimage import io as skio
-import matplotlib.pyplot as plt
-import numpy as np
-import io
 import tensorflow as tf
-import matplotlib.cm as cm
+import json
+from Classification.classification import get_gradcam
+from Segmentation.segmentation import segment_image_base64, load_segmented_model
 from model.transformer import Transformer, default_hparams
 from tokenizers import ByteLevelBPETokenizer
-from flask_cors import CORS, cross_origin
-
-
+import matplotlib.pyplot as plt
+import numpy as np
+import matplotlib.cm as cm
+import io
 
 app = Flask(__name__)
+
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
+
+@cross_origin()
+@app.route('/hello', methods=['GET'])
+def hello():
+
+    return jsonify({
+        'report': "HEllo"
+        # 'attention_map': output_buffer.getvalue()
+        })
+
+app.config['SECRET_KEY'] = 'secret_key'
+socketio = SocketIO(app, cors_allowed_origins='*', max_http_buffer_size=50*1024*1024)
+
+@socketio.on('connect')
+def handle_connect():
+    print('Client connected')
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print('Client disconnected')
+
 
 def load_validator():
     validator_model = tf.keras.models.load_model('checkpoints/cxr_validator_model.tf')
     print('Validator Model Loaded!')
     return validator_model
 
-
 def load_model():
+    # Load Tokenizer
     tokenizer = ByteLevelBPETokenizer(
         'preprocessing/mimic/mimic-vocab.json',
         'preprocessing/mimic/mimic-merges.txt',
     )
 
-    target_vocab_size = tokenizer.get_vocab_size()
-    dropout_rate = 0.1
-    num_layers = 6
-    d_model = 512
-    dff = 2048
-    num_heads = 8
-
-    transformer = Transformer(num_layers, d_model, num_heads, dff,
-                              target_vocab_size=target_vocab_size,
-                              dropout_rate=dropout_rate)
-
+    # Load Model
+    hparams = default_hparams()
+    transformer = Transformer(
+        num_layers=hparams['num_layers'],
+        d_model=hparams['d_model'],
+        num_heads=hparams['num_heads'],
+        dff=hparams['dff'],
+        target_vocab_size=tokenizer.get_vocab_size(),
+        dropout_rate=hparams['dropout_rate'])
     transformer.load_weights('checkpoints/RATCHET.tf')
     print(f'Model Loaded! Checkpoint file: checkpoints/RATCHET.tf')
 
@@ -48,6 +75,7 @@ def load_model():
 
 def top_k_logits(logits, k):
     if k == 0:
+        # no truncation
         return logits
 
     def _top_k():
@@ -66,11 +94,13 @@ def top_k_logits(logits, k):
 
 
 def top_p_logits(logits, p):
+    """Nucleus sampling"""
     batch, _ = logits.shape.as_list()
     sorted_logits = tf.sort(logits, direction='DESCENDING', axis=-1)
     cumulative_probs = tf.cumsum(tf.nn.softmax(sorted_logits, axis=-1), axis=-1)
     indices = tf.stack([
         tf.range(0, batch),
+        # number of indices to include
         tf.maximum(tf.reduce_sum(tf.cast(cumulative_probs <= p, tf.int32), axis=-1) - 1, 0),
     ], axis=-1)
     min_values = tf.gather_nd(sorted_logits, indices)
@@ -101,7 +131,7 @@ def evaluate(inp_img, tokenizer, transformer, temperature, top_k, top_p, options
         elif options == 'Sampling':
             predicted_id = tf.random.categorical(predictions, num_samples=1, dtype=tf.int32, seed=seed)
         else:
-            raise ValueError('Invalid option selected.')
+            print('Invalid option!')
 
         # return the result if the predicted_id is equal to the end token
         if predicted_id == 2:  # stop token #tokenizer_en.vocab_size + 1:
@@ -112,23 +142,25 @@ def evaluate(inp_img, tokenizer, transformer, temperature, top_k, top_p, options
         output = tf.concat([output, predicted_id], axis=-1)
 
     # transformer([inp_img, output[:, :-1]], training=False)
-    return tf.squeeze(output, axis=0)[1:], transformer.decoder.last_attn_scores
-
+    return tf.squeeze(output, axis=0)[1:], transformer.decoder.last_attn_scores, i
 
 transformer, tokenizer = load_model()
-cxr_validator_model = load_validator()
+def main(image_base64, options='Greedy', seed=42, temperature=1., top_k=6, top_p=1., attention_head=-1):
+    image_bytes = base64.b64decode(image_base64)
+    image = skio.imread(BytesIO(image_bytes), as_gray=True)[None, ..., None]
+    img_array = tf.image.convert_image_dtype(image, tf.float32)
+    img_array = tf.image.resize_with_pad(img_array, 224, 224, method=tf.image.ResizeMethod.BILINEAR)
 
-def get_report(img, tokenizer, transformer, temperature, top_k, top_p, options, seed, file):
-    result, attention_weights = evaluate(img, tokenizer, transformer,
+    # Log datetime
+    print('[{}] Running Analysis...'
+          .format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+
+    result, attention_weights, tokens = evaluate(img_array, tokenizer, transformer,
                                          temperature, top_k, top_p,
                                          options, seed)
-    report = tokenizer.decode(result)
-    attention_maps = get_attention_map(result,attention_weights, img, file)
+    predicted_sentence = tokenizer.decode(result)
 
-    return report, attention_maps
-
-def get_attention_map(result, attention_weights,img_array,uploaded_file, attention_head=-1):
-    attn_map = attention_weights[0]  # squeeze
+    attn_map = attention_weights[0]
     if attention_head == -1:  # average attention heads
         attn_map = tf.reduce_mean(attn_map, axis=0)
     else:  # select attention heads
@@ -139,16 +171,21 @@ def get_attention_map(result, attention_weights,img_array,uploaded_file, attenti
     jet_images = {}
     binary_images = {}
 
-    for i in range(attn_map.shape[0] - 1):
+    # read image from tf.keras.preprocessing.image.load_img
+    img = base64.b64decode(image_base64)
+    img = Image.open(io.BytesIO(img))
+    img = img.resize((224, 224))
+    img = img.convert("RGB")
+    img = tf.keras.preprocessing.image.img_to_array(img)
+    for i in range(tokens - 1):
         attn_token = attn_map[i, ...]
         attn_token = tf.reshape(attn_token, [7, 7])
-
         fig, ax = plt.subplots(1, 1)
         ax.set_title(tokenizer.decode(
             [result.numpy()[i]]), fontsize=20)
         img2 = ax.imshow(np.squeeze(img_array))
         ax.imshow(attn_token, cmap='gray', alpha=0.6,
-                  extent=img2.get_extent())
+                    extent=img2.get_extent())
         ax.axis('off')
 
         # convert fig to bytes
@@ -159,6 +196,8 @@ def get_attention_map(result, attention_weights,img_array,uploaded_file, attenti
         # append plot data as value and token as key to attention_images
         attention_images[tokenizer.decode(
             [result.numpy()[i]])] = plot_data
+
+        # Jet Map
         # convert to dtype uint8
         jet_tokens = tf.cast(attn_token, tf.uint8)
 
@@ -174,9 +213,9 @@ def get_attention_map(result, attention_weights,img_array,uploaded_file, attenti
         binary_colors = binary(np.arange(256))[:, :3]
         binary_heatmap = binary_colors[jet_tokens]
 
-        # read image from tf.keras.preprocessing.image.load_img
-        img = uploaded_file
 
+
+        # Create an image with attention map
         jet_heatmap = tf.keras.preprocessing.image.array_to_img(
             jet_heatmap)
         jet_heatmap = jet_heatmap.resize((img.shape[1], img.shape[0]))
@@ -190,6 +229,8 @@ def get_attention_map(result, attention_weights,img_array,uploaded_file, attenti
             binary_heatmap)
 
         superimposed_jet_img = jet_heatmap * 0.6 + img * 0.4
+        superimposed_jet_img = tf.keras.preprocessing.image.array_to_img(
+            superimposed_jet_img)
         # superimposed_jet_img.save(f'superimposed_img${i}.png')
         fig_jet, ax_jet = plt.subplots(1, 1)
         ax_jet.set_title(tokenizer.decode(
@@ -198,6 +239,10 @@ def get_attention_map(result, attention_weights,img_array,uploaded_file, attenti
         ax_jet.axis('off')
 
         superimposed_binary_img = binary_heatmap * 0.6 + img * 0.4
+
+        # Convert the reshaped array to an image
+        superimposed_binary_img = tf.keras.preprocessing.image.array_to_img(
+            superimposed_binary_img)
         # superimposed_binary_img.save(f'superimposed_img${i}.png')
         fig_binary, ax_binary = plt.subplots(1, 1)
         ax_binary.set_title(tokenizer.decode(
@@ -222,61 +267,56 @@ def get_attention_map(result, attention_weights,img_array,uploaded_file, attenti
         binary_images[tokenizer.decode(
             [result.numpy()[i]])] = plot_data_binary
 
-    # save the attention_images in the session state
-    attention_images = json.dumps(attention_images)
-
-    # save the jet_images in the session state
-    jet_images = json.dumps(jet_images)
-    binary_images = json.dumps(binary_images)
-
-    return [attention_images, jet_images, binary_images]
+    return predicted_sentence, attention_images, jet_images, binary_images
 
 
-cors = CORS(app)
-app.config['CORS_HEADERS'] = 'Content-Type'
+import json
+def loadDenseNet():
+    densenetModel = tf.keras.models.load_model('./Classification/weights-improvement-NEW-11-0.31.hdf5')
+    return densenetModel
+densenet = loadDenseNet()
 
+segmented_model = load_segmented_model()
+def generate_report(image_base64,
+    top_k, options, seed, temperature, top_p, attention_head):
+    # jsonObj = data
+    # image_base64 = jsonObj['image']
 
-@cross_origin()
-@app.route('/hello', methods=['GET'])
-def hello():
-    return jsonify({
-        'report': "HEllo"
-        # 'attention_map': output_buffer.getvalue()
-        })
+    # Decode base64 image
+    # image_bytes = base64.b64decode(image_base64)
+    # image = skio.imread(BytesIO(image_bytes), as_gray=True)[None, ..., None]
 
-@cross_origin()
-@app.route('/generate_report', methods=['POST'])
-def generate_report():
-    file = request.files['image']
-    upload = skio.imread(file, as_gray=True)[None, ..., None]
-    img = tf.image.convert_image_dtype(upload, tf.float32)
-    img = tf.image.resize_with_pad(img, 224, 224, method=tf.image.ResizeMethod.BILINEAR)
+    # Generate report and attention maps
+    report, attention_images, jet_images, binary_images = main(image_base64,
+            options, seed, temperature, top_k, top_p, attention_head)
+    segmented = segment_image_base64(image_base64, segmented_model)
 
-    valid = tf.nn.sigmoid(cxr_validator_model(img))
-    if valid < 0.1:
-        return jsonify({'error': 'Image is not a Chest X-ray'})
+    return report, segmented, attention_images, jet_images, binary_images
 
-    temperature = float(request.form.get('temperature', 1.0))
-    top_k = int(request.form.get('top_k', 6))
-    top_p = float(request.form.get('top_p', 1.0))
-    options = request.form.get('options', 'Greedy')
-    seed = int(request.form.get('seed', 42))
+@socketio.on('generate_report')
+def handle_generate_report(data):
+    image_input = data["image"]
 
-    if (options != "Greedy" or options != "Sampling"):
-        options = "Greedy"
+    top_k = int(data["top_k"])
+    options = data["options"]
+    seed = int(data["seed"])
+    temperature = int(data["temperature"])
+    top_p = int(data["top_p"])
+    attention_head = int(data["attention_head"])
 
-    report, attention_maps = get_report(img, tokenizer, transformer, temperature, top_k, top_p, options, seed, img)
-
-
-    return jsonify({
-        'report': report,
-        'attention_map': attention_maps[0],
-        'jet_images': attention_maps[1],
-        'binary_images': attention_maps[2],
-        'accuracy': '25.35',
-        'prediction': 'prediction'
-    })
+    report, segmented, attention_images, jet_images, binary_images = generate_report(image_input,
+    top_k, options, seed, temperature, top_p, attention_head)
+    gradcam,results = get_gradcam(image_input, densenet)
+    emit('generated_report', {
+                                'report': report,
+                              'segmented': segmented,
+                              'gradcam': gradcam,
+                              'attention_map': attention_images,
+                                'classification': results,
+                                'jet_images': jet_images,
+                                'binary_images' : binary_images
+                              })
 
 
 if __name__ == '__main__':
-    app.run()
+    socketio.run(app)
