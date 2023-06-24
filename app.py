@@ -271,10 +271,10 @@ def main(image_base64, options='Greedy', seed=42, temperature=1., top_k=6, top_p
 
 
 import json
-def loadDenseNet():
-    densenetModel = tf.keras.models.load_model('./Classification/weights-improvement-NEW-11-0.31.hdf5')
-    return densenetModel
-densenet = loadDenseNet()
+# def loadDenseNet():
+#     densenetModel = tf.keras.models.load_model('./Classification/weights-improvement-NEW-11-0.31.hdf5')
+#     return densenetModel
+# densenet = loadDenseNet()
 
 segmented_model = load_segmented_model()
 def generate_report(image_base64,
@@ -294,28 +294,56 @@ def generate_report(image_base64,
     return report, segmented, attention_images, jet_images, binary_images
 
 @socketio.on('generate_report')
-def handle_generate_report(data):
-    image_input = data["image"]
+def handle_generate_report(image_input):
+    # image_input = data["image"]
+    print(image_input)
+    # top_k = int(data["top_k"])
+    # options = data["options"]
+    # seed = int(data["seed"])
+    # temperature = int(data["temperature"])
+    # top_p = int(data["top_p"])
+    # attention_head = int(data["attention_head"])
 
-    top_k = int(data["top_k"])
-    options = data["options"]
-    seed = int(data["seed"])
-    temperature = int(data["temperature"])
-    top_p = int(data["top_p"])
-    attention_head = int(data["attention_head"])
-
-    report, segmented, attention_images, jet_images, binary_images = generate_report(image_input,
-    top_k, options, seed, temperature, top_p, attention_head)
-    gradcam,results = get_gradcam(image_input, densenet)
+    # report, segmented, attention_images, jet_images, binary_images = generate_report(image_input,
+    # top_k, options, seed, temperature, top_p, attention_head)
+    gradcam, results = getGradcam_classifcation(image_input)
     emit('generated_report', {
-                                'report': report,
-                              'segmented': segmented,
+                                # 'report': report,
+                              # 'segmented': segmented,
                               'gradcam': gradcam,
-                              'attention_map': attention_images,
+                              # 'attention_map': attention_images,
                                 'classification': results,
-                                'jet_images': jet_images,
-                                'binary_images' : binary_images
+                                # 'jet_images': jet_images,
+                                # 'binary_images' : binary_images
                               })
+
+
+import requests
+
+def getGradcam_classifcation(image_base64):
+    # Specify the API endpoint URL
+    api_url = 'http://localhost:3000/generate'
+
+    # Define the base64 string of the image
+    # Create a JSON payload with the image base64 string
+    payload = {
+        'image': image_base64
+    }
+
+    # Make the POST request to the API endpoint
+    response = requests.post(api_url, json=payload)
+
+    # Check the response status code
+    if response.status_code == 200:
+        # Extract the Grad-CAM image base64 string from the response
+        gradcam_base64 = response.json()['gradcam_image']
+        classification = response.json()['classification']
+        print(gradcam_base64)
+        print(classification)
+        return gradcam_base64, classification
+    else:
+        # Handle the case when the request was not successful
+        print('Request failed with status code:', response.status_code)
 
 
 if __name__ == '__main__':
