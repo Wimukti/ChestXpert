@@ -4,10 +4,9 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
-
 import numpy as np
 import tensorflow as tf
-
+from transformers import TFAutoModel, AutoTokenizer
 
 def default_hparams():
     return {
@@ -18,9 +17,10 @@ def default_hparams():
         'dff': 2048,
         'num_heads': 8,
         'num_layers': 6,
-        'dropout_rate': 0.1
+        'dropout_rate': 0.1,
+        'vit_pretrained_model': "google/vit-base-patch16-224-in21k",
+        'cnn_pretrained_weights': None
     }
-
 
 def positional_encoding(length, depth):
     depth = depth / 2
@@ -37,7 +37,6 @@ def positional_encoding(length, depth):
 
     return tf.cast(pos_encoding, dtype=tf.float32)
 
-
 class PositionalEmbedding(tf.keras.layers.Layer):
     def __init__(self, vocab_size, d_model):
         super().__init__()
@@ -51,11 +50,10 @@ class PositionalEmbedding(tf.keras.layers.Layer):
     def call(self, x):
         length = tf.shape(x)[1]
         x = self.embedding(x)
-        # This factor sets the relative scale of the embedding and positonal_encoding.
+        # This factor sets the relative scale of the embedding and positional_encoding.
         x *= tf.math.sqrt(tf.cast(self.d_model, tf.float32))
         x = x + self.pos_encoding[tf.newaxis, :length, :]
         return x
-
 
 class BaseAttention(tf.keras.layers.Layer):
     def __init__(self, **kwargs):
@@ -63,7 +61,6 @@ class BaseAttention(tf.keras.layers.Layer):
         self.mha = tf.keras.layers.MultiHeadAttention(**kwargs)
         self.layernorm = tf.keras.layers.LayerNormalization()
         self.add = tf.keras.layers.Add()
-
 
 class CrossAttention(BaseAttention):
     def call(self, x, context):
@@ -81,16 +78,15 @@ class CrossAttention(BaseAttention):
 
         return x
 
-    class GlobalSelfAttention(BaseAttention):
-        def call(self, x):
-            attn_output = self.mha(
-                query=x,
-                value=x,
-                key=x)
-            x = self.add([x, attn_output])
-            x = self.layernorm(x)
-            return x
-
+class GlobalSelfAttention(BaseAttention):
+    def call(self, x):
+        attn_output = self.mha(
+            query=x,
+            value=x,
+            key=x)
+        x = self.add([x, attn_output])
+        x = self.layernorm(x)
+        return x
 
 class CausalSelfAttention(BaseAttention):
     def call(self, x):
@@ -102,7 +98,6 @@ class CausalSelfAttention(BaseAttention):
         x = self.add([x, attn_output])
         x = self.layernorm(x)
         return x
-
 
 class FeedForward(tf.keras.layers.Layer):
     def __init__(self, d_model, dff, dropout_rate=0.1):
@@ -119,7 +114,6 @@ class FeedForward(tf.keras.layers.Layer):
         x = self.add([x, self.seq(x)])
         x = self.layer_norm(x)
         return x
-
 
 class DecoderLayer(tf.keras.layers.Layer):
     def __init__(self,
@@ -152,33 +146,55 @@ class DecoderLayer(tf.keras.layers.Layer):
         x = self.ffn(x)  # Shape `(batch_size, seq_len, d_model)`.
         return x
 
-
 class Encoder(tf.keras.layers.Layer):
-    def __init__(self, embedding_dim, input_shape, pretrain_weights=None):
+    def __init__(self, input_shape, vit_pretrained_model=None, cnn_pretrained_weights=None):
         super(Encoder, self).__init__()
 
-        # shape after fc == (batch_size, nf * nf, embedding_dim)
-        self.fc = tf.keras.layers.Dense(embedding_dim, activation='relu')
+        self.densenet121 = tf.keras.applications.DenseNet121(
+            include_top=False, weights=cnn_pretrained_weights, input_shape=input_shape)
+        self.vit_pretrained_model = vit_pretrained_model
+        self.vit_feature_extractor, self.vit = self.create_vit()
 
-        # Use DenseNet-121 as feature extraction model
-        self.base_model = tf.keras.applications.DenseNet121(
-            include_top=False, weights=None, input_shape=input_shape)
+        self.glfnet = GLFNet(d_model=self.vit.config.hidden_size)
 
-        # Load pre-trained weights if present
-        if pretrain_weights:
-            print(f'{datetime.datetime.now()}: I Loading Pretrained DenseNet-121 weights: {pretrain_weights}')
-            self.base_model.load_weights(pretrain_weights)
+    def create_vit(self):
+        if self.vit_pretrained_model:
+            feature_extractor = AutoTokenizer.from_pretrained(self.vit_pretrained_model)
+            vit = TFAutoModel.from_pretrained(self.vit_pretrained_model)
         else:
-            print(f'{datetime.datetime.now()}: I No Pretrained DenseNet-121 weights specified')
+            feature_extractor = AutoTokenizer.from_pretrained("google/vit-base-patch16-224-in21k")
+            vit = TFAutoModel.from_pretrained("google/vit-base-patch16-224-in21k")
+        return feature_extractor, vit
 
-    def call(self, x, **kwargs):
-        x = self.base_model(x)
-        # DenseNet-121 output is (batch_size, ?, ?, 1024)
-        s = tf.shape(x)
-        x = tf.reshape(x, (s[0], s[1] * s[2], x.shape[3]))
-        x = self.fc(x)
-        return x
+    def call(self, x):
+        dense_features = self.densenet121(x)
+        dense_features = tf.keras.layers.GlobalAveragePooling2D()(dense_features)
+        dense_features = tf.keras.layers.Dense(1024, activation='relu')(dense_features)
 
+        vit_features = self.vit_feature_extractor(x)
+        vit_features = tf.keras.layers.GlobalAveragePooling2D()(vit_features['pixel_values'])
+        vit_features = self.vit(vit_features)[0]
+        vit_features = tf.keras.layers.Dense(1024, activation='relu')(vit_features)
+
+        combined_features = tf.keras.layers.Concatenate()([dense_features, vit_features])
+        return self.glfnet(combined_features)
+
+class GLFNet(tf.keras.layers.Layer):
+    def __init__(self, d_model, dropout_rate=0.1):
+        super().__init__()
+        self.concat = tf.keras.layers.Concatenate(axis=-1)
+        self.norm1 = tf.keras.layers.LayerNormalization(epsilon=1e-6)
+        self.dense1 = tf.keras.layers.Dense(d_model, activation='relu')
+        self.norm2 = tf.keras.layers.LayerNormalization(epsilon=1e-6)
+        self.dropout = tf.keras.layers.Dropout(dropout_rate)
+
+    def call(self, x):
+        combined = self.concat(x)
+        norm1_output = self.norm1(combined)
+        dense1_output = self.dense1(norm1_output)
+        norm2_output = self.norm2(dense1_output)
+        output = self.dropout(norm2_output)
+        return output
 
 class Decoder(tf.keras.layers.Layer):
     def __init__(self, *, num_layers, d_model, num_heads, dff, vocab_size,
@@ -212,15 +228,15 @@ class Decoder(tf.keras.layers.Layer):
         # The shape of x is (batch_size, target_seq_len, d_model).
         return x
 
-
 class Transformer(tf.keras.Model):
     def __init__(self, num_layers, d_model, num_heads, dff,
                  target_vocab_size, dropout_rate=0.1, input_shape=(224, 224, 1),
-                 classifier_weights=None):
+                 classifier_weights=None, vit_pretrained_model=None, cnn_pretrained_weights=None):
         super(Transformer, self).__init__()
 
-        self.encoder = Encoder(d_model, input_shape,
-                               pretrain_weights=classifier_weights)
+        self.encoder = Encoder(input_shape=input_shape,
+                               vit_pretrained_model=vit_pretrained_model,
+                               cnn_pretrained_weights=cnn_pretrained_weights)
 
         self.decoder = Decoder(num_layers=num_layers, d_model=d_model,
                                num_heads=num_heads, dff=dff,
@@ -251,9 +267,7 @@ class Transformer(tf.keras.Model):
         # Return the final output and the attention weights.
         return logits
 
-
 if __name__ == "__main__":
-
     hparams = default_hparams()
 
     transformer = Transformer(
@@ -262,12 +276,15 @@ if __name__ == "__main__":
         num_heads=hparams['num_heads'],
         dff=hparams['dff'],
         target_vocab_size=2048,
-        dropout_rate=hparams['dropout_rate'])
+        dropout_rate=hparams['dropout_rate'],
+        input_shape=(hparams['img_x'], hparams['img_y'], hparams['img_ch']),
+        vit_pretrained_model=hparams['vit_pretrained_model'],
+        cnn_pretrained_weights=hparams['cnn_pretrained_weights']
+    )
 
-    a=1
+    a = 1
 
-
-    image = np.random.rand(1,224,224,1).astype('float32')
+    image = np.random.rand(1, 224, 224, 1).astype('float32')
     text = np.random.randint(0, 2048, size=(1, 27))
 
     output = transformer((image, text))
