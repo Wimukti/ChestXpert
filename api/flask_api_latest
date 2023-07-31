@@ -1,0 +1,364 @@
+from PIL import Image
+from flask import jsonify
+from flask_cors import CORS, cross_origin
+from flask import Flask
+from flask_socketio import SocketIO, emit
+import base64
+from io import BytesIO
+from flask import Flask, request, jsonify
+from skimage import io as skio
+import tqdm
+import datetime
+import tensorflow as tf
+import json
+from Classification.classification import get_gradcam
+from Segmentation.segmentation import segment_image_base64, load_segmented_model
+from model.transformer import Transformer, default_hparams
+from tokenizers import ByteLevelBPETokenizer
+import matplotlib.pyplot as plt
+import numpy as np
+import matplotlib.cm as cm
+import io
+
+from model.utils import create_target_masks
+
+app = Flask(__name__)
+
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
+
+@cross_origin()
+@app.route('/hello', methods=['GET'])
+def hello():
+
+    return jsonify({
+        'report': "HEllo"
+        # 'attention_map': output_buffer.getvalue()
+        })
+
+app.config['SECRET_KEY'] = 'secret_key'
+socketio = SocketIO(app, cors_allowed_origins='*', max_http_buffer_size=50*1024*1024)
+
+@socketio.on('connect')
+def handle_connect():
+    print('Client connected')
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print('Client disconnected')
+
+
+def load_validator():
+    validator_model = tf.keras.models.load_model('checkpoints/cxr_validator_model.h5')
+    print('Validator Model Loaded!')
+    return validator_model
+
+def load_model():
+    # Load Tokenizer
+    tokenizer = ByteLevelBPETokenizer(
+        'preprocessing/mimic/mimic-vocab.json',
+        'preprocessing/mimic/mimic-merges.txt',
+    )
+
+    target_vocab_size = tokenizer.get_vocab_size()
+    dropout_rate = 0.1
+    num_layers = 6
+    d_model = 512
+    dff = 2048
+    num_heads = 8
+
+    # Load Model
+    hparams = default_hparams()
+    transformer = Transformer(
+        num_layers,
+        d_model,
+        num_heads,
+        dff,
+        target_vocab_size,
+        dropout_rate)
+    checkpoint_path = "checkpoints/train0"
+    ckpt = tf.train.Checkpoint(transformer=transformer)
+    latest_checkpoint = tf.train.latest_checkpoint(checkpoint_path)
+    ckpt.restore(latest_checkpoint)
+    print(f'Model Loaded! Checkpoint file: {latest_checkpoint}')
+
+    return transformer, tokenizer
+
+
+def top_k_logits(logits, k):
+    if k == 0:
+        # no truncation
+        return logits
+
+    def _top_k():
+        values, _ = tf.nn.top_k(logits, k=k)
+        min_values = values[:, -1, tf.newaxis]
+        return tf.where(
+            logits < min_values,
+            tf.ones_like(logits, dtype=logits.dtype) * -1e10,
+            logits,
+        )
+    return tf.cond(
+       tf.equal(k, 0),
+       lambda: logits,
+       lambda: _top_k(),
+    )
+
+
+def top_p_logits(logits, p):
+    """Nucleus sampling"""
+    batch, _ = logits.shape.as_list()
+    sorted_logits = tf.sort(logits, direction='DESCENDING', axis=-1)
+    cumulative_probs = tf.cumsum(tf.nn.softmax(sorted_logits, axis=-1), axis=-1)
+    indices = tf.stack([
+        tf.range(0, batch),
+        # number of indices to include
+        tf.maximum(tf.reduce_sum(tf.cast(cumulative_probs <= p, tf.int32), axis=-1) - 1, 0),
+    ], axis=-1)
+    min_values = tf.gather_nd(sorted_logits, indices)
+    return tf.where(
+        logits < min_values,
+        tf.ones_like(logits) * -1e10,
+        logits,
+    )
+
+
+def evaluate(inp_img, tokenizer, transformer, temperature, top_k, top_p, options, seed, MAX_LENGTH=128):
+
+    # The first token to the transformer should be the start token
+    output = tf.convert_to_tensor([[tokenizer.token_to_id('<s>')]])
+
+    for i in tqdm.tqdm(range(MAX_LENGTH)):
+        combined_mask = create_target_masks(output)
+        # predictions.shape == (batch_size, seq_len, vocab_size)
+        predictions, attention_weights = transformer(inp_img,
+                                                     output,
+                                                     False,
+                                                     combined_mask,
+                                                     None)
+
+        # select the last word from the seq_len dimension
+        predictions = predictions[:, -1, :] / temperature  # (batch_size, vocab_size)
+        predictions = top_k_logits(predictions, k=top_k)
+        predictions = top_p_logits(predictions, p=top_p)
+
+        if options == 'Greedy':
+            predicted_id = tf.cast(tf.argmax(predictions, axis=-1), tf.int32)[:, tf.newaxis]
+        elif options == 'Sampling':
+            predicted_id = tf.random.categorical(predictions, num_samples=1, dtype=tf.int32, seed=seed)
+        else:
+            print('Invalid option!')
+
+        # return the result if the predicted_id is equal to the end token
+        if predicted_id == 2:  # stop token #tokenizer_en.vocab_size + 1:
+            break
+
+        # concatentate the predicted_id to the output which is given to the decoder
+        # as its input.
+        output = tf.concat([output, predicted_id], axis=-1)
+
+    # transformer([inp_img, output[:, :-1]], training=False)
+    return tf.squeeze(output, axis=0)[1:], attention_weights, i
+
+transformer, tokenizer = load_model()
+def main(image_base64, options='Greedy', seed=42, temperature=1., top_k=6, top_p=1., attention_head=-1):
+    image_bytes = base64.b64decode(image_base64)
+    image = skio.imread(BytesIO(image_bytes), as_gray=True)[None, ..., None]
+    img_array = tf.image.convert_image_dtype(image, tf.float32)
+    img_array = tf.image.resize_with_pad(img_array, 224, 224, method=tf.image.ResizeMethod.BILINEAR)
+
+    # Log datetime
+    print('[{}] Running Analysis...'
+          .format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+
+    result, attention_weights, tokens = evaluate(img_array, tokenizer, transformer,
+                                         temperature, top_k, top_p,
+                                         options, seed)
+    predicted_sentence = tokenizer.decode(result)
+
+    attn_map = attention_weights['decoder_layer6_block2'][0]
+    attn_map = tf.reduce_mean(attn_map, axis=0)
+    attn_map = attn_map / attn_map.numpy().max() * 255
+
+    attention_images = {}
+    jet_images = {}
+    binary_images = {}
+
+    # read image from tf.keras.preprocessing.image.load_img
+    img = base64.b64decode(image_base64)
+    img = Image.open(io.BytesIO(img))
+    img = img.resize((224, 224))
+    img = img.convert("RGB")
+    img = tf.keras.preprocessing.image.img_to_array(img)
+    for i in range(tokens - 1):
+        attn_token = attn_map[i, ...]
+        attn_token = tf.reshape(attn_token, [7, 7])
+        fig, ax = plt.subplots(1, 1)
+        ax.set_title(tokenizer.decode(
+            [result.numpy()[i]]), fontsize=20)
+        img2 = ax.imshow(np.squeeze(img_array))
+        ax.imshow(attn_token, cmap='gray', alpha=0.6,
+                    extent=img2.get_extent())
+        ax.axis('off')
+
+        # convert fig to bytes
+        buffer = io.BytesIO()
+        fig.canvas.print_png(buffer)
+        plot_data = base64.b64encode(buffer.getvalue()).decode()
+
+        # append plot data as value and token as key to attention_images
+        attention_images[tokenizer.decode(
+            [result.numpy()[i]])] = plot_data
+
+        # Jet Map
+        # convert to dtype uint8
+        jet_tokens = tf.cast(attn_token, tf.uint8)
+
+        # get jet color map
+        jet = cm.get_cmap('jet')
+
+        # get binary color map
+        binary = cm.get_cmap('binary_r')
+
+        # color maps
+        jet_colors = jet(np.arange(256))[:, :3]
+        jet_heatmap = jet_colors[jet_tokens]
+        binary_colors = binary(np.arange(256))[:, :3]
+        binary_heatmap = binary_colors[jet_tokens]
+
+
+
+        # Create an image with attention map
+        jet_heatmap = tf.keras.preprocessing.image.array_to_img(
+            jet_heatmap)
+        jet_heatmap = jet_heatmap.resize((img.shape[1], img.shape[0]))
+        jet_heatmap = tf.keras.preprocessing.image.img_to_array(
+            jet_heatmap)
+        binary_heatmap = tf.keras.preprocessing.image.array_to_img(
+            binary_heatmap)
+        binary_heatmap = binary_heatmap.resize(
+            (img.shape[1], img.shape[0]))
+        binary_heatmap = tf.keras.preprocessing.image.img_to_array(
+            binary_heatmap)
+
+        superimposed_jet_img = jet_heatmap * 0.6 + img * 0.4
+        superimposed_jet_img = tf.keras.preprocessing.image.array_to_img(
+            superimposed_jet_img)
+        # superimposed_jet_img.save(f'superimposed_img${i}.png')
+        fig_jet, ax_jet = plt.subplots(1, 1)
+        ax_jet.set_title(tokenizer.decode(
+            [result.numpy()[i]]), fontsize=20)
+        ax_jet.imshow(np.squeeze(superimposed_jet_img))
+        ax_jet.axis('off')
+
+        superimposed_binary_img = binary_heatmap * 0.6 + img * 0.4
+
+        # Convert the reshaped array to an image
+        superimposed_binary_img = tf.keras.preprocessing.image.array_to_img(
+            superimposed_binary_img)
+        # superimposed_binary_img.save(f'superimposed_img${i}.png')
+        fig_binary, ax_binary = plt.subplots(1, 1)
+        ax_binary.set_title(tokenizer.decode(
+            [result.numpy()[i]]), fontsize=20)
+        ax_binary.imshow(np.squeeze(superimposed_binary_img))
+        ax_binary.axis('off')
+
+        # convert fig to bytes
+        buffer_jet = io.BytesIO()
+        fig_jet.canvas.print_png(buffer_jet)
+        plot_data_jet = base64.b64encode(
+            buffer_jet.getvalue()).decode()
+
+        buffer_binary = io.BytesIO()
+        fig_binary.canvas.print_png(buffer_binary)
+        plot_data_binary = base64.b64encode(
+            buffer_binary.getvalue()).decode()
+
+        # append plot data as value and token as key to jet_images
+        jet_images[tokenizer.decode(
+            [result.numpy()[i]])] = plot_data_jet
+        binary_images[tokenizer.decode(
+            [result.numpy()[i]])] = plot_data_binary
+
+    return predicted_sentence, attention_images, jet_images, binary_images
+
+
+import json
+# def loadDenseNet():
+#     densenetModel = tf.keras.models.load_model('./Classification/weights-improvement-NEW-11-0.31.hdf5')
+#     return densenetModel
+# densenet = loadDenseNet()
+
+segmented_model = load_segmented_model()
+def generate_report(image_base64,
+    top_k, options, seed, temperature, top_p, attention_head):
+    # jsonObj = data
+    # image_base64 = jsonObj['image']
+
+    # Decode base64 image
+    # image_bytes = base64.b64decode(image_base64)
+    # image = skio.imread(BytesIO(image_bytes), as_gray=True)[None, ..., None]
+
+    # Generate report and attention maps
+    report, attention_images, jet_images, binary_images = main(image_base64,
+            options, seed, temperature, top_k, top_p, attention_head)
+    segmented = segment_image_base64(image_base64, segmented_model)
+
+    return report, segmented, attention_images, jet_images, binary_images
+
+@socketio.on('generate_report')
+def handle_generate_report(data):
+    image_input = data["image"]
+    print(image_input)
+    top_k = int(data["top_k"])
+    options = data["options"]
+    seed = int(data["seed"])
+    temperature = int(data["temperature"])
+    top_p = int(data["top_p"])
+    attention_head = int(data["attention_head"])
+
+    report, segmented, attention_images, jet_images, binary_images = generate_report(image_input,
+    top_k, options, seed, temperature, top_p, attention_head)
+    print(report)
+
+    gradcam, results = getGradcam_classifcation(image_input)
+    emit('generated_report', {
+        'report': report,
+        'segmented': segmented,
+        'gradcam': gradcam,
+        'attention_map': attention_images,
+        'classification': results,
+        'jet_images': jet_images,
+        'binary_images': binary_images
+    })
+
+import requests
+
+def getGradcam_classifcation(image_base64):
+    # Specify the API endpoint URL
+    api_url = 'http://localhost:3000/generate'
+
+    # Define the base64 string of the image
+    # Create a JSON payload with the image base64 string
+    payload = {
+        'image': image_base64
+    }
+
+    # Make the POST request to the API endpoint
+    response = requests.post(api_url, json=payload)
+
+    # Check the response status code
+    if response.status_code == 200:
+        # Extract the Grad-CAM image base64 string from the response
+        gradcam_base64 = response.json()['gradcam_image']
+        classification = response.json()['classification']
+        print(gradcam_base64)
+        print(classification)
+        return gradcam_base64, classification
+    else:
+        # Handle the case when the request was not successful
+        print('Request failed with status code:', response.status_code)
+
+
+if __name__ == '__main__':
+    socketio.run(app)

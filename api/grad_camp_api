@@ -1,0 +1,207 @@
+import argparse
+import io
+import json
+
+from flask import Flask, request, jsonify
+# Initialize Flask app
+import base64
+import os
+import pandas as pd
+from PIL import Image
+from src.models import ModelFactory
+from src.generator import CheXpertDataGenerator
+from keras.preprocessing import image
+from src.models import DenseNet, ModelFactory
+from skimage.transform import resize
+import numpy as np
+import keras
+from sklearn.metrics.ranking import roc_auc_score
+import cv2
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from io import BytesIO
+
+graph = tf.get_default_graph()
+
+def computeAUROC(dataGT, dataPRED, classCount):
+    outAUROC = []
+    for i in range(classCount):
+        try:
+            outAUROC.append(roc_auc_score(dataGT[:, i], dataPRED[:, i]))
+        except ValueError:
+            pass
+    return outAUROC
+
+
+def predict_single_image(encoded_image_string, model):
+    img_width, img_height = 224, 224
+
+    decoded_image = base64.b64decode(encoded_image_string)
+    img = Image.open(BytesIO(decoded_image))
+    img = img.resize((img_width, img_height))
+
+    image_array = np.asarray(img.convert("RGB"))
+    image_array = image_array / 255.
+    image_array = resize(image_array, (img_width, img_height))
+    x = np.expand_dims(image_array, axis=0)
+    images = np.vstack([x])
+    classes = model.predict_on_batch(images)
+    probab = classes[0]
+
+    return probab
+
+
+
+import cv2
+import base64
+import numpy as np
+
+
+
+def generate_gradcam(encoded_image_string, model):
+    img_width, img_height = 224, 224
+
+    decoded_image = base64.b64decode(encoded_image_string)
+    img = Image.open(BytesIO(decoded_image))
+    img = img.resize((img_width, img_height))
+    image_array = np.asarray(img.convert("RGB"))
+    image_array = image_array / 255.
+    image_array = resize(image_array, (224, 224))
+    x = np.expand_dims(image_array, axis=0)
+    images = np.vstack([x])
+
+    # Predict the class probabilities
+    preds = model.predict(images)
+    class_idx = np.argmax(preds[0])
+    class_output = model.output[:, class_idx]
+
+    # Get the last convolutional layer in the model
+    last_conv_layer = model.get_layer('bn')
+
+    # Generate the gradient-weighted class activation maps (Grad-CAM)
+    grads = keras.backend.gradients(class_output, last_conv_layer.output)[0]
+    pooled_grads = keras.backend.mean(grads, axis=(0, 1, 2))
+    iterate = keras.backend.function([model.input], [pooled_grads, last_conv_layer.output[0]])
+    pooled_grads_value, conv_layer_output_value = iterate([images])
+
+    for i in range(last_conv_layer.output_shape[3]):
+        conv_layer_output_value[:, :, i] *= pooled_grads_value[i]
+
+    # Average the weighted feature maps along the channel dimension
+    heatmap = np.mean(conv_layer_output_value, axis=-1)
+    heatmap = np.maximum(heatmap, 0)
+    heatmap /= np.max(heatmap)
+
+    # Invert the colors of the heatmap
+    inverted_heatmap = heatmap
+
+    # Resize the heatmap to the original image size
+    heatmap = cv2.resize(inverted_heatmap, (img_width, img_height))
+
+    # Apply heatmap visualization with inverted colors
+    heatmap = np.uint8(255 * heatmap)
+    heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
+
+    # Convert the image array to 8-bit unsigned integer (CV_8U)
+    image_array = np.uint8(255 * image_array)
+
+    # Apply Grad-CAM visualization on the original image
+    superimposed_img = cv2.addWeighted(image_array, 0, heatmap, 1, 0)
+    ret, buffer = cv2.imencode('.jpg', superimposed_img)
+    base64_str = base64.b64encode(buffer).decode('utf-8')
+
+    return base64_str
+
+
+
+# parser = argparse.ArgumentParser(description='Testing...')
+# parser.add_argument('--data-dir', help='Input dataset directory.', type=str, default='.')
+# parser.add_argument('--model-file-path', help='Path to model', type=str,
+#                     default='./codalab/src/best_weights_1687481048.5704129.h5')
+# parser.add_argument('--model-type', help='Model architecture to train', type=str, default='DenseNet121')
+#
+# args = parser.parse_args()
+valid_file = os.path.join(".", 'CheXpert-v1.0-small/valid.csv')
+# class_names = ['Atelectasis', 'Cardiomegaly', 'Consolidation', 'Edema', 'Pleural Effusion']
+class_names = ['No Finding', 'Enlarged Cardiomediastinum', 'Cardiomegaly', 'Lung Opacity',
+               'Lung Lesion', 'Edema', 'Consolidation', 'Pneumonia', 'Atelectasis', 'Pneumothorax',
+               'Pleural Effusion', 'Pleural Other', 'Fracture', 'Support Devices']
+# class_names = ['No Finding', 'Enlarged Cardiomediastinum', 'Cardiomegaly', 'Edema', 'Consolidation', 'Pneumonia',
+#                'Atelectasis', 'Pneumothorax',
+#                'Pleural Effusion']
+# img_width, img_height = 224, 224
+# model_factory = ModelFactory()
+# model = model_factory.get_model(class_names,
+#                                 model_name=args.model_type,
+#                                 use_base_weights=True,
+#                                 weights_path=args.model_file_path,
+#                                 input_shape=(img_height, img_width, 3))
+# optimizer = keras.optimizers.Adam(lr=1e-3, beta_1=0.9, beta_2=0.999)
+# model.compile(optimizer=optimizer, loss="binary_crossentropy", metrics=["accuracy"])
+
+print('Evaluating Model...')
+df = pd.read_csv(valid_file)
+df = df[df['Frontal/Lateral'] == 'Frontal']
+
+# image_path = os.path.join(args.data_dir, 'CheXpert-v1.0-small/Final/Sample Data/Normal.jpeg')
+# # Base64 using image path
+# with open(image_path, "rb") as image_file:
+#     encoded_string = base64.b64encode(image_file.read())
+# print(encoded_string)
+encoded_string = "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"
+# probab = predict_single_image(encoded_string, model)
+#
+# for i in range(len(class_names)):
+#     print(class_names[i], ' ', probab[i])
+
+# generate_gradcam(encoded_string, model)
+
+def loadModel():
+    img_width, img_height = 224, 224
+    model_factory = ModelFactory()
+    model = model_factory.get_model(class_names,
+                                    model_name="DenseNet121",
+                                    use_base_weights=True,
+                                    weights_path='./codalab/src/best_weights_1687481048.5704129.h5',
+                                    input_shape=(img_height, img_width, 3))
+    optimizer = keras.optimizers.Adam(lr=1e-3, beta_1=0.9, beta_2=0.999)
+    model.compile(optimizer=optimizer, loss="binary_crossentropy", metrics=["accuracy"])
+    return model
+
+model = loadModel()
+
+app = Flask(__name__)
+
+# API route
+@app.route('/generate', methods=['POST'])
+def generate_gradcam_api():
+    # Get base64 string image from the request
+    data = request.get_json()
+    encoded_string = data.get("image")
+
+
+    grad_cam64 = ""
+    probab = ""
+    with graph.as_default():
+        grad_cam64 = generate_gradcam(encoded_string, model)
+        probab = predict_single_image(encoded_string, model)
+
+    results = []
+    for i in range(len(class_names)):
+        result = {
+            'class_name': class_names[i],
+            'probability': float(probab[i])  # Convert `float32` to `float`
+        }
+        results.append(result)
+    print(results)
+    # Convert the results list to a JSON string
+    json_str = json.dumps(results)
+
+    return jsonify({'gradcam_image': grad_cam64,
+                    'classification' : json_str
+                    })
+
+
+# Run the Flask app
+if __name__ == '__main__':
+    app.run(port=3000)
